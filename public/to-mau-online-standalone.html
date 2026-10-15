@@ -55,7 +55,36 @@ input::placeholder{color:#7f8ba2}
 .footnote{text-align:center;color:#657087;font-size:11px;padding:12px 0 24px}
 @media(max-width:640px){body{padding:12px}#ttl{padding:11px 12px;margin-bottom:14px;font-size:19px;border-radius:15px}#ttl:before{flex-basis:36px;height:36px}.bar{padding:11px;gap:8px;border-radius:15px}.bar button{flex:0 0 auto}.pal{padding:10px;gap:9px}.sw{width:34px;height:34px}.big{margin:14px auto;border-radius:14px}.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr));gap:10px}.card{padding:10px;border-radius:17px}.welcome{margin:30px auto 20px}.welcome h2{letter-spacing:-1.4px}.welcome p{font-size:14px}.entry-grid{grid-template-columns:1fr;gap:12px;margin:22px 0}.entry-card{min-height:210px;padding:20px;border-radius:20px}.entry-card h3{font-size:22px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* Cinematic intro screen */
+#pixel-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;padding:24px;background:radial-gradient(ellipse at 18% 20%,#6d28d933,transparent 38%),radial-gradient(ellipse at 82% 78%,#0284c733,transparent 38%),#070810;transition:opacity .65s ease,visibility .65s ease}
+#pixel-intro::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,#000,transparent 88%)}
+#pixel-intro::after{content:"";position:absolute;width:min(64vw,620px);aspect-ratio:1;border:1px solid #a78bfa25;border-radius:50%;box-shadow:0 0 0 44px #8b5cf60b,0 0 0 100px #60a5fa08;pointer-events:none;animation:intro-pulse 7s ease-in-out infinite}
+#pixel-intro.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.intro-inner{position:relative;z-index:1;width:min(800px,100%);text-align:center;animation:intro-rise .9s cubic-bezier(.2,.8,.2,1) both}
+.intro-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:clamp(34px,7vh,70px);font-weight:950;letter-spacing:.22em;font-size:13px;color:#dbeafe}
+.intro-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#c4b5fd,#60a5fa);color:#080b14;font-size:20px;letter-spacing:-.08em;box-shadow:0 0 34px #8b5cf655}
+.intro-status{display:flex;align-items:center;justify-content:center;gap:9px;color:#a5b4fc;font-size:11px;font-weight:850;letter-spacing:.24em;text-transform:uppercase}
+.intro-dot{width:7px;height:7px;border-radius:50%;background:#67e8f9;box-shadow:0 0 16px #67e8f9;animation:intro-blink 1.5s ease-in-out infinite}
+.intro-title{margin:22px 0 18px;font-size:clamp(42px,8.5vw,88px);line-height:.99;letter-spacing:-.075em;font-weight:1000}
+.intro-title span{display:block;color:transparent;background:linear-gradient(100deg,#fff 8%,#c4b5fd 45%,#7dd3fc 90%);background-clip:text;-webkit-background-clip:text}
+.intro-copy{max-width:520px;margin:0 auto;color:#aab3c8;font-size:clamp(14px,2vw,17px);line-height:1.8}
+.intro-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:34px}
+.intro-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:52px;padding:0 25px;border:1px solid #ffffff20;border-radius:14px;color:#f8fafc;background:#ffffff08;font:inherit;font-weight:900;letter-spacing:.04em;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
+.intro-btn.primary{border-color:#a78bfa66;background:linear-gradient(110deg,#7c3aed,#2563eb);box-shadow:0 12px 40px #4f46e555}
+.intro-btn:hover{transform:translateY(-3px);border-color:#c4b5fd;box-shadow:0 16px 45px #4f46e544}
+.intro-hint{margin-top:24px;color:#667085;font-size:10px;font-weight:800;letter-spacing:.2em}
+.intro-loader{width:118px;height:2px;margin:24px auto 0;overflow:hidden;background:#ffffff12;border-radius:99px}
+.intro-loader::after{content:"";display:block;width:42%;height:100%;background:linear-gradient(90deg,#8b5cf6,#67e8f9);box-shadow:0 0 12px #8b5cf6;animation:intro-load 2s ease-in-out infinite}
+@keyframes intro-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes intro-pulse{50%{transform:scale(1.06);opacity:.65}}
+@keyframes intro-blink{50%{opacity:.35;transform:scale(.75)}}
+@keyframes intro-load{from{transform:translateX(-110%)}to{transform:translateX(280%)}}
+@media(max-width:560px){#pixel-intro{padding:22px}.intro-brand{margin-bottom:42px}.intro-title{letter-spacing:-.065em}.intro-actions{flex-direction:column;align-items:stretch;max-width:320px;margin:30px auto 0}.intro-btn{width:100%}}
+@media(prefers-reduced-motion:reduce){#pixel-intro,.intro-inner,.intro-dot,.intro-loader::after{animation:none!important;transition:none!important}}
+
 </style></head><body>
+<div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button><button class="intro-btn" id="intro-skip">BỎ QUA INTRO</button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
 <h1 id="ttl">Tô màu online</h1>
 <div id="app" class="mut">Đang tải hình…</div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -112,7 +141,11 @@ const qs=new URLSearchParams(location.search);
   const im=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=IMG});analyze(im);
   if(typeof Peer==="undefined"){app.textContent="Không tải được thư viện kết nối (PeerJS). Kiểm tra mạng.";return}
   const room=qs.get("room");
-  if(!room&&!qs.get("host")){landing();return}
+  const intro=$("pixel-intro");
+  const enter=()=>{intro.classList.add("hidden");setTimeout(()=>{intro.remove();landing()},650)};
+  $("intro-enter").onclick=enter;$("intro-skip").onclick=enter;
+  if(!room&&!qs.get("host")){return}
+  intro.remove();
   qs.get("host")?startHost():startPlayer(room)
   function landing(){$("ttl").textContent="PIXEL — Tô màu cùng nhau";app.className="";
     app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL COLOR STUDIO</span><h2>Một nét vẽ.<br><span>Vô vàn sắc màu.</span></h2><p>Tạo phòng chơi cùng bạn bè hoặc nhập mã phòng để bắt đầu tô màu, so tài sáng tạo và cùng hoàn thành bức tranh.</p></section><section class="entry-grid" aria-label="Chọn cách chơi"><article class="entry-card"><span class="entry-icon" aria-hidden="true">✦</span><h3>Tạo phòng chơi</h3><p>Mở phòng mới, chia sẻ mã và theo dõi tiến độ của các nhóm theo thời gian thực.</p><button class="p" id="h">Tạo phòng ngay <span aria-hidden="true">→</span></button></article><article class="entry-card join"><span class="entry-icon" aria-hidden="true">↗</span><h3>Tham gia phòng</h3><p>Đã có mã phòng? Nhập mã 4 chữ số bên dưới để vào chơi cùng mọi người.</p><input id="cd" placeholder="Nhập mã phòng (4 số)" inputmode="numeric" maxlength="4" aria-label="Mã phòng"><button id="j">Vào phòng chơi <span aria-hidden="true">→</span></button></article></section><footer class="footnote">CHƠI CÙNG NHAU · TÔ MÀU · TẠO NIỀM VUI</footer>';
