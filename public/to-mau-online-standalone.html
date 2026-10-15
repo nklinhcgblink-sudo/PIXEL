@@ -192,16 +192,17 @@ function palette(onSel){const p=document.createElement("div");p.className="bar p
     if(i){b.style.background=h}else{b.textContent="🧽";b.title="Xóa màu"}
     b.onclick=()=>{tool=i;p.querySelectorAll(".sw").forEach((x,j)=>x.classList.toggle("sel",j===i));onSel&&onSel()};p.appendChild(b)});return p}
 function paintCanvas(a,enabled,onChange){const cv=document.createElement("canvas");cv.className="big"+(enabled?"":" off");draw(cv,a,1);
-  if(enabled)cv.onclick=e=>{const r=hit(cv,e);if(!r)return;a[r]=a[r]===tool?a[r]:tool;draw(cv,a,1);onChange(a)};return cv}
+  if(enabled)cv.onclick=e=>{const r=hit(cv,e);if(!r)return;a[r]=a[r]===tool?a[r]:tool;draw(cv,a,1);onChange(a,r,tool)};return cv}
 
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
 const qs=new URLSearchParams(location.search);
 (async()=>{
   const im=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=IMG});analyze(im);
-  if(typeof Peer==="undefined"){app.textContent="Không tải được thư viện kết nối (PeerJS). Kiểm tra mạng.";return}
   const room=qs.get("room");
   const intro=$("pixel-intro");
   const ADMIN_AUTH_URL="https://sblkdgssieogtfoxsfov.supabase.co/functions/v1/pixel-admin-auth";
+  const TEAM_SYNC_URL="https://sblkdgssieogtfoxsfov.supabase.co/functions/v1/pixel-team-sync";
+  async function teamApi(action,extra={}){const token=(()=>{try{return sessionStorage.getItem("pixel_admin_token")||""}catch(e){return ""}})();const res=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...extra,...(action.startsWith("admin_")?{token}:{})})});const data=await res.json().catch(()=>({error:"Phản hồi máy chủ không hợp lệ."}));if(!res.ok)throw new Error(data.error||"Không thể đồng bộ dữ liệu.");return data;}
   const enter=()=>{intro.classList.add("hidden");setTimeout(()=>{intro.remove();landing()},650)};
   $("intro-enter").onclick=enter;
   if(!room&&!qs.get("host")){return}
@@ -246,95 +247,130 @@ const qs=new URLSearchParams(location.search);
     $("j").onclick=()=>{const c=$("cd").value.trim();if(c)location.search="?room="+encodeURIComponent(c)}}
   /* ---------- HOST ---------- */
   function startHost(){
-    let code=LS("tm_code");if(!code){code=String(Math.floor(1000+Math.random()*9000));LS("tm_code",code)}
-    let teams={},game={locked:false,key:""},conns={},mode="view",focus=null,rt=null;
-    try{teams=JSON.parse(LS("tm_teams")||"{}");game={...game,...JSON.parse(LS("tm_game")||"{}")}}catch(e){}
-    const save=()=>{LS("tm_teams",JSON.stringify(teams));LS("tm_game",JSON.stringify(game))};
-    const link=location.origin+location.pathname+"?room="+code;
-    const send=(id,m)=>{try{conns[id]&&conns[id].open&&conns[id].send(m)}catch(e){}};
-    const state=(id,full)=>send(id,{t:"state",locked:game.locked,f:full?teams[id].f:undefined});
-    const bcast=()=>Object.keys(conns).forEach(id=>state(id,false));
-    const later=()=>{clearTimeout(rt);rt=setTimeout(render,200)};
-    const status=document.createElement("div");status.className="mut";status.textContent="Đang mở phòng…";
-    function open(){const peer=new Peer("tomau-"+code);
-      peer.on("open",()=>{status.textContent="Phòng đang mở";render()});
-      peer.on("error",e=>{status.textContent="Lỗi kết nối: "+e.type+(e.type==="unavailable-id"?" – đang thử lại…":"");if(e.type==="unavailable-id")setTimeout(open,4000)});
-      peer.on("connection",c=>{
-        c.on("data",m=>{if(!m||!m.id)return;const id=String(m.id).slice(0,40);
-          if(m.t==="join"){conns[id]=c;const n=String(m.name||"Nhóm").slice(0,24);teams[id]=teams[id]||{name:n,f:""};teams[id].name=n;save();state(id,true);later()}
-          else if(m.t==="fills"&&teams[id]){conns[id]=c;if(game.locked){state(id,true);return}teams[id].f=String(m.f).slice(0,20000);save();later()}});
-        c.on("close",()=>{});});
-      window.__peer=peer}
-    open();
+    let cls=null,teams=[],locked=false,mode="view",focus=null,answer="",refreshTimer=null,renderTimer=null;
+    const status=document.createElement("div");status.className="mut";status.textContent="Đang kết nối dữ liệu lớp học…";
+    const linkFor=t=>location.origin+location.pathname+"?room="+encodeURIComponent(t.code);
+    const activeCount=t=>(t.members||[]).length;
+    async function refresh(){
+      try{const data=await teamApi("admin_list");cls=data.class;teams=data.teams||[];locked=!!cls.locked;
+        if(mode==="view")render();
+        else updateStats();
+        status.textContent="Đồng bộ trực tuyến · Cập nhật "+new Date().toLocaleTimeString("vi-VN");
+      }catch(e){status.textContent=e.message||"Mất kết nối đồng bộ."}
+    }
+    async function init(){
+      try{const s=await teamApi("admin_session");cls=s.class;locked=!!cls.locked;
+        const a=await teamApi("admin_answer");answer=a.f||"";
+        await refresh();
+        refreshTimer=setInterval(refresh,2500);
+      }catch(e){app.textContent=e.message||"Không thể tải bảng quản trị."}
+    }
+    function updateStats(){
+      const stats=app.querySelector("#pixel-admin-stats");if(!stats)return;
+      const active=teams.reduce((n,t)=>n+activeCount(t),0);
+      const started=teams.filter(t=>t.filled>0).length;
+      stats.innerHTML='<div class="pixel-admin-stat"><span>SỐ ĐỘI</span><strong>'+teams.length+'</strong><small>Được cấp mã trong lớp</small></div><div class="pixel-admin-stat"><span>THÀNH VIÊN ONLINE</span><strong>'+active+'</strong><small>Hoạt động trong 45 giây gần nhất</small></div><div class="pixel-admin-stat"><span>ĐỘI ĐÃ TÔ</span><strong>'+started+'/'+teams.length+'</strong><small>Tiến độ được lưu trên máy chủ</small></div>';
+    }
     function render(){
       app.className="";app.innerHTML="";
       const shell=document.createElement("div");shell.className="pixel-admin-shell";
-      shell.innerHTML='<aside class="pixel-admin-sidebar"><div class="pixel-admin-brand"><span class="pixel-admin-brand-mark">P</span><span>PIXEL <small>ADMIN STUDIO</small></span></div><nav class="pixel-admin-nav" aria-label="Admin navigation"><button data-admin-view="dashboard" class="active"><span>▦</span>Tổng quan</button><button data-admin-view="participants"><span>♙</span>Người chơi</button><button data-admin-view="answer"><span>✎</span>Tô đáp án</button><button data-admin-view="room"><span>⌁</span>Phòng hiện tại</button><button data-admin-view="logout"><span>↪</span>Đăng xuất</button></nav><div class="pixel-admin-sidefoot">KHU QUẢN TRỊ RIÊNG<br>PIXEL COLOR STUDIO · LIVE</div></aside><main class="pixel-admin-main"><header class="pixel-admin-topbar"><div><h2 id="pixel-admin-heading">Trung tâm quản trị</h2><p>Quản lý phiên tô màu và theo dõi tiến độ theo thời gian thực.</p></div><span class="pixel-admin-live">PHIÊN QUẢN TRỊ</span></header><div class="pixel-admin-stats" id="pixel-admin-stats"></div><div class="pixel-admin-content" id="pixel-admin-content"></div></main>';
+      shell.innerHTML='<aside class="pixel-admin-sidebar"><div class="pixel-admin-brand"><span class="pixel-admin-brand-mark">P</span><span>PIXEL <small>ADMIN STUDIO</small></span></div><nav class="pixel-admin-nav" aria-label="Admin navigation"><button data-view="dashboard" class="active"><span>▦</span>Tổng quan</button><button data-view="teams"><span>♙</span>Các đội</button><button data-view="answer"><span>✎</span>Tô đáp án</button><button data-view="newclass"><span>＋</span>Lớp mới</button><button data-view="logout"><span>↪</span>Đăng xuất</button></nav><div class="pixel-admin-sidefoot">PIXEL COLOR STUDIO · LIVE<br>ĐỒNG BỘ NHIỀU THIẾT BỊ</div></aside><main class="pixel-admin-main"><header class="pixel-admin-topbar"><div><h2 id="pixel-admin-heading">Quản lý đội chơi</h2><p>Cấp mã riêng cho từng đội và theo dõi tiến độ toàn lớp.</p></div><span class="pixel-admin-live">ĐỒNG BỘ LIVE</span></header><div class="pixel-admin-stats" id="pixel-admin-stats"></div><div class="pixel-admin-content" id="pixel-admin-content"></div></main>';
       app.appendChild(shell);
       const panel=shell.querySelector("#pixel-admin-content");
-      const stats=shell.querySelector("#pixel-admin-stats");
-      const bar=document.createElement("div");bar.className="bar";
-      const list=Object.entries(teams).map(([id,t])=>({id,...t}));
       const nav=shell.querySelector(".pixel-admin-nav");
-      nav.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
-        const v=btn.dataset.adminView;
+      nav.querySelectorAll("button").forEach(btn=>btn.onclick=async()=>{
+        const v=btn.dataset.view;
         if(v==="logout"){try{sessionStorage.removeItem("pixel_admin_token")}catch(e){}location.search="";return}
-        if(v==="answer"){mode="key";focus=null;render();return}
-        if(v==="participants"){mode="view";focus=null;render();setTimeout(()=>panel.querySelector(".grid")?.scrollIntoView({behavior:"smooth",block:"start"}),0);return}
-        if(v==="room"){panel.querySelector(".pixel-room-card")?.scrollIntoView({behavior:"smooth",block:"center"});return}
+        if(v==="newclass"){if(!confirm("Tạo lớp mới? Lớp hiện tại sẽ được đóng; các mã đội cũ không thể tham gia tiếp."))return;
+          try{const n=prompt("Tên lớp mới:","Lớp học PIXEL");if(n===null)return;const d=await teamApi("admin_new_class",{name:n||"Lớp học PIXEL"});cls=d.class;teams=[];locked=false;answer="";mode="view";focus=null;render()}catch(e){alert(e.message)}return}
+        if(v==="answer"){mode="key";focus=null;try{const a=await teamApi("admin_answer");answer=a.f||""}catch(e){}render();return}
         mode="view";focus=null;render();
       });
-      nav.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.dataset.adminView===(mode==="key"?"answer":"dashboard")));
-      shell.querySelector("#pixel-admin-heading").textContent=focus?"Chi tiết người chơi":mode==="key"?"Tô đáp án":"Tổng quan phòng chơi";
-      stats.innerHTML=focus?"":'<div class="pixel-admin-stat"><span>NGƯỜI CHƠI / NHÓM</span><strong>'+list.length+'</strong><small>Đã tham gia phiên này</small></div><div class="pixel-admin-stat"><span>TRẠNG THÁI PHÒNG</span><strong style="font-size:20px;color:'+(game.locked?'#fca5a5':'#6ee7b7')+'">'+(game.locked?'Đã khóa':'Đang mở')+'</strong><small>'+(game.locked?'Người chơi tạm dừng tô':'Cho phép tiếp tục tô màu')+'</small></div><div class="pixel-admin-stat"><span>TIẾN ĐỘ BÀI</span><strong>'+list.filter(t=>dec(t.f).some(v=>v)).length+'</strong><small>Nhóm đã bắt đầu tô</small></div>';
-
-      if(focus){const t=teams[focus];$("ttl").textContent="Nhóm: "+(t?t.name:"");
-        bar.innerHTML='<button id="bk">← Quay lại</button>';panel.appendChild(bar);$("bk").onclick=()=>{focus=null;render()};
-        if(t)panel.appendChild(paintCanvas(dec(t.f),false));return}
-      $("ttl").textContent=mode==="key"?"Host – tô đáp án":"Host – bảng theo dõi";
-      bar.innerHTML=`<button class="${game.locked?'p':'d'}" id="lk">${game.locked?'🔓 Mở khóa game':'🔒 Khóa game'}</button><button id="mk">${mode==="key"?'← Về theo dõi':'✏️ Tô đáp án'}</button><span class="mut">${list.length} nhóm</span>`;
-      panel.appendChild(bar);
-      const info=document.createElement("div");info.className="card pixel-room-card";info.style.cursor="default";info.style.marginBottom="10px";
-      info.innerHTML='<div class="mut">PHÒNG ĐANG QUẢN LÝ</div><div class="room-code"></div><div class="room-link"><span>Link tham gia: <span id="lnk"></span></span><button id="cp">Sao chép link</button></div>';
-      info.querySelector(".room-code").textContent=code;info.querySelector("#lnk").textContent=link;panel.appendChild(info);panel.appendChild(status);
-      info.querySelector("#cp").onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(link);
-      $("lk").onclick=()=>{game.locked=!game.locked;save();bcast();render()};
-      $("mk").onclick=()=>{mode=mode==="key"?"view":"key";render()};
-      if(mode==="key"){panel.appendChild(palette());let tm;panel.appendChild(paintCanvas(dec(game.key),true,a=>{game.key=enc(a);clearTimeout(tm);tm=setTimeout(save,300)}));return}
-      const key=dec(game.key),hasKey=key.some(v=>v),tot=key.filter(v=>v).length;
-      const rows=list.map(t=>{const a=dec(t.f);let ok=0,bad=0,n=0;for(let i=1;i<=NR;i++)if(a[i]){n++;key[i]&&a[i]===key[i]?ok++:bad++}return{t,a,ok,bad,n}})
-        .sort((x,y)=>hasKey?y.ok-x.ok||x.bad-y.bad:y.n-x.n);
-      const g=document.createElement("div");g.className="grid";
-      rows.forEach(({t,a,ok,bad,n})=>{const c=document.createElement("div");c.className="card";
-        c.innerHTML=`<b><span></span><span>${hasKey?`✓${ok}/${tot} ✗${bad}`:n+" vùng"}</span></b><canvas></canvas><button style="margin-top:6px">Xóa bài</button>`;
-        c.querySelector("span").textContent=t.name;draw(c.querySelector("canvas"),a,.5);
-        c.onclick=()=>{focus=t.id;render()};
-        c.querySelector("button").onclick=e=>{e.stopPropagation();if(confirm("Xóa bài của nhóm này?")){teams[t.id].f="";save();state(t.id,true);render()}};
-        g.appendChild(c)});
-      if(!rows.length)g.innerHTML='<p class="mut">Chưa có nhóm nào tham gia.</p>';panel.appendChild(g)}
-    render()}
+      nav.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.dataset.view===(mode==="key"?"answer":focus?"teams":"dashboard")));
+      shell.querySelector("#pixel-admin-heading").textContent=focus?"Đội "+(teams.find(t=>t.id===focus)?.name||""):mode==="key"?"Đáp án mẫu":"Quản lý đội chơi";
+      updateStats();
+      if(focus){
+        const t=teams.find(x=>x.id===focus);const bar=document.createElement("div");bar.className="bar";bar.innerHTML='<button id="back">← Tất cả đội</button><span class="mut">Mã đội: '+(t?t.code:"")+'</span>';panel.appendChild(bar);
+        bar.querySelector("#back").onclick=()=>{focus=null;render()};
+        if(t){const members=(t.members||[]).map(m=>m.name).join(", ")||"Chưa có thành viên online";const info=document.createElement("div");info.className="card";info.style.cursor="default";info.innerHTML='<b>Thành viên gần đây</b><p class="mut"></p><b>Tiến độ tô</b><p class="mut"></p><canvas style="width:100%;max-width:600px;display:block;margin:12px auto;background:#fff;border-radius:12px"></canvas>';
+          info.querySelectorAll("p")[0].textContent=members;info.querySelectorAll("p")[1].textContent=t.filled+" / "+NR+" ô đã tô ("+Math.round(100*t.filled/NR)+"%)";draw(info.querySelector("canvas"),fillsArray(t.fills),.8);panel.appendChild(info)}return;
+      }
+      const bar=document.createElement("div");bar.className="bar";
+      bar.innerHTML='<button class="'+(locked?"p":"d")+'" id="lock">'+(locked?"🔓 Mở khóa tất cả đội":"🔒 Khóa tất cả đội")+'</button><input id="team-name" maxlength="40" placeholder="Tên đội (VD: Đội 1)"><input id="team-code" inputmode="numeric" maxlength="4" placeholder="Mã 4 số (tùy chọn)"><button class="p" id="create">＋ Cấp mã đội</button><span class="mut">'+teams.length+' đội</span>';
+      panel.appendChild(bar);panel.appendChild(status);
+      const info=document.createElement("div");info.className="card pixel-room-card";info.style.cursor="default";info.style.marginTop="12px";info.innerHTML='<div class="mut">LỚP ĐANG QUẢN LÝ</div><strong></strong><p class="mut">Mỗi đội dùng mã riêng. Tất cả thành viên cùng mã sẽ tô trên một bức tranh chung.</p>';info.querySelector("strong").textContent=cls?.name||"Lớp học PIXEL";panel.appendChild(info);
+      bar.querySelector("#lock").onclick=async()=>{try{const d=await teamApi("admin_lock",{locked:!locked});locked=!!d.class.locked;await refresh()}catch(e){alert(e.message)}};
+      bar.querySelector("#create").onclick=async()=>{const name=bar.querySelector("#team-name").value.trim(),code=bar.querySelector("#team-code").value.trim();if(!name){alert("Hãy nhập tên đội trước.");return}
+        try{const d=await teamApi("admin_create_team",{name, ...(code?{code}:{})});bar.querySelector("#team-name").value="";bar.querySelector("#team-code").value="";await refresh();alert("Đã cấp mã "+d.team.code+" cho "+d.team.name+".")}catch(e){alert(e.message)}};
+      if(mode==="key"){
+        const hint=document.createElement("p");hint.className="mut";hint.textContent="Đáp án mẫu được lưu trên máy chủ. Chọn màu rồi tô các vùng trên hình.";panel.appendChild(hint);panel.appendChild(palette());
+        let a=dec(answer),tm;panel.appendChild(paintCanvas(a,true,arr=>{answer=enc(arr);clearTimeout(tm);tm=setTimeout(()=>teamApi("admin_answer",{f:answer}).catch(e=>status.textContent=e.message),350)}));return;
+      }
+      const grid=document.createElement("div");grid.className="grid";
+      if(!teams.length){grid.innerHTML='<p class="mut">Chưa có đội nào. Nhập tên đội rồi bấm “Cấp mã đội”.</p>'}
+      teams.forEach(t=>{
+        const card=document.createElement("article");card.className="card";card.style.cursor="default";
+        const pct=Math.min(100,Math.round(100*(t.filled||0)/NR));const memberNames=(t.members||[]).map(m=>m.name).join(", ")||"Chưa có thành viên online";
+        card.innerHTML='<b><span class="team-title"></span><span class="tag">'+activeCount(t)+' online</span></b><div class="room-code"></div><div class="mut team-members" style="min-height:36px;margin:5px 0"></div><div style="height:7px;border-radius:99px;background:#ffffff15;overflow:hidden;margin:10px 0"><div class="progress" style="height:100%;background:linear-gradient(90deg,#8b5cf6,#60a5fa);width:0"></div></div><div class="mut progress-label"></div><canvas style="width:100%;display:block;margin-top:10px;background:#fff;border-radius:10px"></canvas><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px"><button class="p detail">Xem đội</button><button class="copy">Sao chép link</button><button class="clear">Xóa bài</button><button class="d delete">Xóa đội</button></div>';
+        card.querySelector(".team-title").textContent=t.name;card.querySelector(".room-code").textContent=t.code;card.querySelector(".team-members").textContent=memberNames;card.querySelector(".progress").style.width=pct+"%";card.querySelector(".progress-label").textContent=(t.filled||0)+" / "+NR+" ô đã tô · "+pct+"%";
+        draw(card.querySelector("canvas"),fillsArray(t.fills),.42);
+        card.querySelector(".detail").onclick=()=>{focus=t.id;render()};
+        card.querySelector(".copy").onclick=()=>{const link=linkFor(t);if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>alert("Đã sao chép link đội "+t.name)).catch(()=>prompt("Sao chép link này:",link));else prompt("Sao chép link này:",link)};
+        card.querySelector(".clear").onclick=async()=>{if(!confirm("Xóa toàn bộ màu của "+t.name+"?"))return;try{await teamApi("admin_clear_team",{teamId:t.id});await refresh()}catch(e){alert(e.message)}};
+        card.querySelector(".delete").onclick=async()=>{if(!confirm("Xóa đội "+t.name+" và mã "+t.code+"?"))return;try{await teamApi("admin_delete_team",{teamId:t.id});await refresh()}catch(e){alert(e.message)}};
+        grid.appendChild(card);
+      });
+      panel.appendChild(grid);
+    }
+    function fillsArray(t){const a=Array(NR+1).fill(0);(t?.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)a[x.region_id]=x.color});return a}
+    const originalRefresh=refresh;
+    refresh=async function(){try{const data=await teamApi("admin_list");cls=data.class;teams=(data.teams||[]).map(t=>({...t,fills:[]}));locked=!!cls.locked;
+      const full=await Promise.all(teams.map(async t=>{const d=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"state",code:t.code})}).then(r=>r.json());return {...t,fills:d.fills||[]}}));teams=full;
+      if(mode==="view")render();else updateStats();status.textContent="Đồng bộ trực tuyến · "+new Date().toLocaleTimeString("vi-VN");
+    }catch(e){status.textContent=e.message||"Mất kết nối đồng bộ."}};
+    init();
+  }
   /* ---------- NGƯỜI CHƠI ---------- */
   function startPlayer(code){
-    let pid=LS("tm_pid");if(!pid){pid="p"+Math.random().toString(36).slice(2,10);LS("tm_pid",pid)}
-    let name=LS("tm_name_"+code),conn=null,locked=false,mine=null,timer=null,live=false;
-    const connect=()=>{const peer=new Peer();
-      peer.on("open",()=>{conn=peer.connect("tomau-"+code,{reliable:true});
-        conn.on("open",()=>{live=true;if(name)conn.send({t:"join",id:pid,name});else view()});
-        conn.on("data",m=>{if(m&&m.t==="state"){locked=m.locked;if(m.f!==undefined)mine=dec(m.f);view()}});
-        conn.on("close",()=>{live=false;retry()})});
-      peer.on("error",()=>{live=false;retry()})};
-    let rtm;const retry=()=>{clearTimeout(rtm);rtm=setTimeout(connect,3000);if(!mine)app.textContent="Đang kết nối tới phòng "+code+"… (host đã mở phòng chưa?)"};
-    function view(){app.className="";app.innerHTML="";
-      if(!name){$("ttl").textContent="Tham gia phòng "+code;
-        app.innerHTML='<div class="bar"><input id="nm" maxlength="24" placeholder="Tên nhóm của bạn"><button class="p" id="go">Vào chơi</button></div>';
-        $("go").onclick=()=>{const n=$("nm").value.trim();if(n&&conn){name=n;LS("tm_name_"+code,n);conn.send({t:"join",id:pid,name})}};return}
-      if(!mine){app.textContent="Đang vào phòng…";return}
-      $("ttl").textContent="Nhóm: "+name;
+    let pid=LS("tm_pid");
+    if(!pid){pid="p"+Math.random().toString(36).slice(2,12);LS("tm_pid",pid)}
+    let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",pollTimer=null,sendBusy=false;
+    async function request(action,extra={}){const res=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,code,memberId:pid,name,...extra})});const data=await res.json().catch(()=>({error:"Phản hồi máy chủ không hợp lệ."}));if(!res.ok)throw new Error(data.error||"Không thể kết nối đội.");return data}
+    function showJoin(errorText=""){
+      app.className="";$("ttl").textContent="Tham gia đội "+code;
+      app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL TEAM MODE</span><h2>Tô chung một<br><span>bức tranh.</span></h2><p>Nhập tên của bạn để tham gia đội. Mọi thành viên cùng mã sẽ thấy các vùng màu được cập nhật trên thiết bị của nhau.</p></section><div class="bar" style="max-width:560px;margin:0 auto"><input id="member-name" maxlength="32" placeholder="Tên của bạn" style="flex:1" value=""><button class="p" id="join-team">Vào đội →</button><div id="join-error" class="mut" style="width:100%;color:#fca5a5"></div></div>';
+      $("member-name").value=name;$("join-error").textContent=errorText;
+      $("join-team").onclick=async()=>{const n=$("member-name").value.trim();if(!n){$("join-error").textContent="Hãy nhập tên của bạn.";return}name=n;LS("tm_name_"+code,name);$("join-team").disabled=true;
+        try{await request("join");connected=true;await sync(true);if(!pollTimer)pollTimer=setInterval(()=>sync(false),1500)}catch(e){$("join-error").textContent=e.message;$("join-team").disabled=false}};
+    }
+    async function sync(force){
+      try{
+        const data=await request("state");connected=true;locked=!!data.locked;
+        const next=Array(NR+1).fill(0);(data.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)next[x.region_id]=x.color});
+        const sig=next.join(",")+"|"+locked;
+        if(force||sig!==seenSig){mine=next;seenSig=sig;view()}
+      }catch(e){connected=false;if(!name)showJoin();else if(!app.querySelector(".team-error")){const msg=document.createElement("div");msg.className="mut team-error";msg.textContent="Đang thử kết nối lại… "+e.message;app.prepend(msg)}}
+    }
+    function view(){
+      app.className="";app.innerHTML="";$("ttl").textContent="Đội "+name+" · Mã "+code;
       const bar=document.createElement("div");bar.className="bar";
-      bar.innerHTML=locked?'<span class="tag">🔒 Host đã khóa game</span>':'<span class="mut">Chọn màu rồi bấm vào ô trên hình. Tô sai thì chọn màu khác tô lại.</span>';
+      bar.innerHTML='<span class="tag">'+(locked?"🔒 Admin đã khóa lượt tô":"● Đang đồng bộ")+'</span><span class="mut">Tô ở thiết bị nào, đồng đội sẽ thấy trong khoảng 1–2 giây.</span><span class="mut" id="team-live-count"></span>';
       app.appendChild(bar);if(!locked)app.appendChild(palette());
-      app.appendChild(paintCanvas(mine,!locked,a=>{clearTimeout(timer);timer=setTimeout(()=>{try{conn.send({t:"fills",id:pid,f:enc(a)})}catch(e){}},250)}))}
-    connect();app.textContent="Đang kết nối tới phòng "+code+"…"}
+      const stat=document.createElement("div");stat.className="mut";stat.style.textAlign="center";stat.style.margin="4px";stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô";app.appendChild(stat);
+      app.appendChild(paintCanvas(mine,!locked,async(a,region,color)=>{
+        mine=a.slice();stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đang lưu…";
+        if(sendBusy)return;sendBusy=true;
+        try{await request("fill",{region,color});stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đã lưu";await sync(false)}
+        catch(e){stat.textContent="Chưa lưu được: "+e.message}
+        finally{sendBusy=false}
+      }));
+      const members=document.createElement("div");members.className="bar";members.style.justifyContent="center";members.innerHTML='<span class="mut">Thành viên đang hoạt động: </span><strong id="members-list">Đang tải…</strong>';app.appendChild(members);
+      request("state").then(d=>{const names=(d.members||[]).map(m=>m.name);const el=members.querySelector("#members-list");if(el)el.textContent=names.join(", ")||"Chỉ bạn";}).catch(()=>{});
+    }
+    if(!name){showJoin();return}
+    (async()=>{try{await request("join");await sync(true);pollTimer=setInterval(()=>sync(false),1500)}catch(e){showJoin(e.message)}})();
+  }
+
 })();
 </script>
 <script>
