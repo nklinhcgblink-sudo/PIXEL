@@ -3,37 +3,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PIXEL — Tô màu online</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark;--bg:#070b16;--fg:#f1f7ff;--card:#101a2c;--gl:#263b5c;--mut:#9aacc8;--blue:#3b82f6;--cyan:#38bdf8;--line:rgba(105,163,255,.23);--glow:rgba(56,189,248,.18)}
-html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+:root{box-sizing:border-box;color-scheme:dark;--bg:#080b14;--panel:#111827;--line:#ffffff18;--muted:#a7b0c2;--text:#f7f8fc;--blue:#60a5fa;--violet:#a78bfa;--gold:#fbbf24;--cyan:#7dd3fc}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,rgba(37,99,235,.25),transparent 55%),linear-gradient(180deg,#080e1d 0%,#070b16 70%);color:var(--fg);font:14px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:clamp(14px,2.5vw,30px);max-width:1500px;margin-inline:auto}
-h1{display:flex;align-items:center;gap:12px;font-size:clamp(20px,3vw,28px);font-weight:850;letter-spacing:-.04em;margin:0 0 20px;padding:15px 18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(110deg,rgba(16,26,44,.98),rgba(12,23,42,.82));box-shadow:0 12px 40px rgba(0,0,0,.18)}
-h1:before{content:"PX";display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:15px;letter-spacing:-.04em;box-shadow:0 0 25px rgba(56,189,248,.24)}
-#app{min-width:0}
-button,input{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--gl);background:#0b1425;color:var(--fg);outline:none;transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
-button{cursor:pointer;font-weight:700;box-shadow:inset 0 1px rgba(255,255,255,.035)}
-button:hover{border-color:var(--cyan);background:#142643;box-shadow:0 0 0 3px rgba(56,189,248,.08);transform:translateY(-1px)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-button.p{background:linear-gradient(135deg,#2563eb,#0891b2);color:white;border-color:#3b82f6;box-shadow:0 5px 20px rgba(37,99,235,.22)}
-button.p:hover{background:linear-gradient(135deg,#3478ff,#06a8c8);box-shadow:0 6px 24px rgba(56,189,248,.25)}
-button.d{background:#251a31;color:#fca5a5;border-color:#85465f}
-.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:rgba(13,23,41,.78);backdrop-filter:blur(12px)}
-.mut{color:var(--mut)}
-.pal{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(7,11,22,.92);padding:12px 14px;box-shadow:0 8px 25px rgba(0,0,0,.22);backdrop-filter:blur(14px)}
-.sw{width:36px;height:36px;padding:0;border-radius:50%;border:3px solid rgba(255,255,255,.16);box-shadow:0 2px 8px rgba(0,0,0,.24)}
+html{min-height:100%;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;padding:clamp(16px,3vw,34px);background:radial-gradient(ellipse at 15% 8%,#5b3aa52c,transparent 35%),radial-gradient(ellipse at 88% 85%,#176da82c,transparent 35%),var(--bg);color:var(--text);font:14px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+#ttl{width:min(1120px,100%);margin:0 auto 22px;display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,#ffffff0b,#ffffff03);font-size:clamp(19px,2.7vw,25px);font-weight:950;letter-spacing:-.7px;box-shadow:0 18px 55px #0002}
+#ttl:before{content:"P";display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#fbbf24,#8b5cf6 60%,#60a5fa);color:#0a0c14;font-size:20px;font-weight:1000;box-shadow:0 12px 36px #8b5cf633}
+#app{width:min(1120px,100%);margin:0 auto;min-width:0}
+#app>p.mut{padding:22px;border:1px dashed var(--line);border-radius:16px;background:#ffffff05;color:var(--muted)}
+.mut{color:var(--muted)}
+button,input{font:inherit;padding:11px 15px;border-radius:12px;border:1px solid #ffffff20;background:#ffffff08;color:var(--text);outline:none;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+button{cursor:pointer;font-weight:800;box-shadow:inset 0 1px #ffffff08}
+button:hover{transform:translateY(-2px);border-color:#a5b4fc88;background:#ffffff12;box-shadow:0 10px 28px #0003}
+button:focus-visible,input:focus-visible{outline:3px solid #a5b4fc;outline-offset:3px}
+button.p{color:#0a0c14;border-color:transparent;background:linear-gradient(110deg,#fbbf24,#c4b5fd 56%,#7dd3fc);box-shadow:0 8px 28px #8b5cf626}
+button.p:hover{background:linear-gradient(110deg,#fcd34d,#ddd6fe 56%,#bae6fd);box-shadow:0 12px 32px #8b5cf633}
+button.d{background:#7f1d1d30;color:#fecaca;border-color:#f8717145}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#ffffff0b,#ffffff04);backdrop-filter:blur(14px);box-shadow:0 12px 36px #0002}
+.bar .mut{font-size:13px}
+input{min-width:0;max-width:100%}
+input::placeholder{color:#7f8ba2}
+.pal{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#0b0e1beF;padding:13px 15px;box-shadow:0 12px 32px #0004;backdrop-filter:blur(18px)}
+.sw{width:38px;height:38px;padding:0;border-radius:50%;border:3px solid #ffffff25;box-shadow:0 3px 12px #0004;transition:transform .18s,box-shadow .18s,border-color .18s}
 .sw:hover{transform:translateY(-2px) scale(1.06)}
-.sw.sel{border-color:#fff;transform:scale(1.12);box-shadow:0 0 0 3px #3b82f6,0 0 20px rgba(56,189,248,.38)}
-.big{display:block;width:100%;max-width:760px;margin:18px auto;border:1px solid rgba(116,170,255,.42);border-radius:15px;background:#fff;touch-action:manipulation;cursor:pointer;box-shadow:0 18px 55px rgba(0,0,0,.32),0 0 28px rgba(37,99,235,.08);overflow:hidden}
+.sw.sel{border-color:#fff;transform:scale(1.1);box-shadow:0 0 0 3px #a78bfa,0 0 22px #8b5cf677}
+.big{display:block;width:100%;max-width:760px;margin:20px auto;border:1px solid #ffffff40;border-radius:20px;background:#fff;touch-action:manipulation;cursor:pointer;box-shadow:0 22px 70px #0006,0 0 0 6px #ffffff04;overflow:hidden}
 .big.off{cursor:not-allowed;opacity:.86}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr));gap:14px;margin-top:14px}
-.card{min-width:0;background:linear-gradient(145deg,rgba(17,29,49,.98),rgba(12,21,37,.98));border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;box-shadow:0 8px 24px rgba(0,0,0,.12)}
-.card:hover{border-color:rgba(56,189,248,.7);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.22)}
-.card canvas{width:100%;display:block;border:1px solid #2c4263;border-radius:8px;margin-top:10px;background:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr));gap:16px;margin-top:16px}
+.card{min-width:0;position:relative;background:linear-gradient(145deg,#ffffff0c,#ffffff04);border:1px solid var(--line);border-radius:22px;padding:15px;cursor:pointer;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;box-shadow:0 14px 38px #0002;overflow:hidden}
+.card:hover{border-color:#a5b4fc80;transform:translateY(-4px);background:linear-gradient(145deg,#ffffff12,#ffffff06);box-shadow:0 20px 45px #0004}
+.card canvas{width:100%;display:block;border:1px solid #ffffff20;border-radius:12px;margin-top:12px;background:#fff}
 .card b{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px}
-.tag{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#dbeafe;background:rgba(37,99,235,.2);border:1px solid rgba(96,165,250,.35)}
-#app>p.mut{padding:22px;border:1px dashed var(--gl);border-radius:12px}
-input{min-width:0}input::placeholder{color:#7185a5}
-@media(max-width:600px){body{padding:10px}h1{padding:12px;font-size:20px;margin-bottom:14px}h1:before{flex-basis:36px;height:36px}.bar{padding:10px;gap:8px}.bar button{flex:0 0 auto}.pal{padding:10px;gap:9px}.sw{width:33px;height:33px}.big{margin:12px auto;border-radius:10px}.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:9px}.card{padding:8px}}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800;color:#ddd6fe;background:#a78bfa18;border:1px solid #a78bfa40}
+.welcome{max-width:860px;margin:clamp(28px,7vh,70px) auto 24px;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#a5b4fc;font-size:11px;font-weight:900;letter-spacing:3px}
+.eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 14px #7dd3fc}
+.welcome h2{font-size:clamp(34px,6vw,62px);letter-spacing:-2.6px;line-height:1.05;margin:16px 0}
+.welcome h2 span{background:linear-gradient(90deg,#fbbf24,#c4b5fd 52%,#7dd3fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.welcome p{max-width:620px;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.85}
+.entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:28px 0}
+.entry-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:240px;padding:24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#ffffff0b,#ffffff03);overflow:hidden;transition:transform .2s,border-color .2s,background .2s}
+.entry-card:after{content:"";position:absolute;width:190px;height:190px;right:-65px;top:-75px;border-radius:50%;background:#8b5cf6;opacity:.15;filter:blur(1px);pointer-events:none}
+.entry-card.join:after{background:#60a5fa}
+.entry-card:hover{transform:translateY(-4px);border-color:#ffffff48;background:linear-gradient(145deg,#ffffff12,#ffffff05)}
+.entry-icon{display:grid;place-items:center;width:54px;height:54px;border:1px solid #ffffff20;border-radius:17px;background:#ffffff0b;color:#c4b5fd;font-size:24px;margin-bottom:22px}
+.join .entry-icon{color:#93c5fd}
+.entry-card h3{font-size:24px;letter-spacing:-.6px;margin:0 0 7px}
+.entry-card p{margin:0 0 20px;color:var(--muted);line-height:1.7}
+.entry-card button{margin-top:auto;position:relative;z-index:1}
+.entry-card input{width:100%;margin:0 0 10px;position:relative;z-index:1}
+.footnote{text-align:center;color:#657087;font-size:11px;padding:12px 0 24px}
+@media(max-width:640px){body{padding:12px}#ttl{padding:11px 12px;margin-bottom:14px;font-size:19px;border-radius:15px}#ttl:before{flex-basis:36px;height:36px}.bar{padding:11px;gap:8px;border-radius:15px}.bar button{flex:0 0 auto}.pal{padding:10px;gap:9px}.sw{width:34px;height:34px}.big{margin:14px auto;border-radius:14px}.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr));gap:10px}.card{padding:10px;border-radius:17px}.welcome{margin:30px auto 20px}.welcome h2{letter-spacing:-1.4px}.welcome p{font-size:14px}.entry-grid{grid-template-columns:1fr;gap:12px;margin:22px 0}.entry-card{min-height:210px;padding:20px;border-radius:20px}.entry-card h3{font-size:22px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <h1 id="ttl">Tô màu online</h1>
@@ -94,8 +114,8 @@ const qs=new URLSearchParams(location.search);
   const room=qs.get("room");
   if(!room&&!qs.get("host")){landing();return}
   qs.get("host")?startHost():startPlayer(room)
-  function landing(){$("ttl").textContent="Tô màu online";app.className="";
-    app.innerHTML='<div class="bar"><button class="p" id="h">Tôi là Host</button></div><div class="bar"><input id="cd" placeholder="Mã phòng (4 số)" inputmode="numeric" maxlength="4"><button id="j">Vào chơi</button></div>';
+  function landing(){$("ttl").textContent="PIXEL — Tô màu cùng nhau";app.className="";
+    app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL COLOR STUDIO</span><h2>Một nét vẽ.<br><span>Vô vàn sắc màu.</span></h2><p>Tạo phòng chơi cùng bạn bè hoặc nhập mã phòng để bắt đầu tô màu, so tài sáng tạo và cùng hoàn thành bức tranh.</p></section><section class="entry-grid" aria-label="Chọn cách chơi"><article class="entry-card"><span class="entry-icon" aria-hidden="true">✦</span><h3>Tạo phòng chơi</h3><p>Mở phòng mới, chia sẻ mã và theo dõi tiến độ của các nhóm theo thời gian thực.</p><button class="p" id="h">Tạo phòng ngay <span aria-hidden="true">→</span></button></article><article class="entry-card join"><span class="entry-icon" aria-hidden="true">↗</span><h3>Tham gia phòng</h3><p>Đã có mã phòng? Nhập mã 4 chữ số bên dưới để vào chơi cùng mọi người.</p><input id="cd" placeholder="Nhập mã phòng (4 số)" inputmode="numeric" maxlength="4" aria-label="Mã phòng"><button id="j">Vào phòng chơi <span aria-hidden="true">→</span></button></article></section><footer class="footnote">CHƠI CÙNG NHAU · TÔ MÀU · TẠO NIỀM VUI</footer>';
     $("h").onclick=()=>{location.search="?host=1"};
     $("j").onclick=()=>{const c=$("cd").value.trim();if(c)location.search="?room="+c}}
   /* ---------- HOST ---------- */
