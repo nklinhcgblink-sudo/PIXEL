@@ -339,7 +339,8 @@ const qs=new URLSearchParams(location.search);
     if(!pid){pid="p"+Math.random().toString(36).slice(2,12);LS("tm_pid",pid)}
     let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",seenMembersSig="",teamId=null,pollTimer=null,heartbeatTimer=null,sendBusy=false,fillQueue=[],fillTimer=null,realtimeClient=null,realtimeChannel=null,realtimeDrawTimer=null;
     function startRealtime(id){
-      if(!id||teamId!==id)return;
+      if(!id)return;
+      if(teamId===id&&realtimeChannel)return;
       teamId=id;
       if(!window.supabase||realtimeChannel)return;
       try{
