@@ -342,7 +342,7 @@ const qs=new URLSearchParams(location.search);
       });
       panel.appendChild(grid);
     }
-    function fillsArray(t){const a=Array(NR+1).fill(0);(t?.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)a[x.region_id]=x.color});return a}
+    function fillsArray(t){const a=Array(NR+1).fill(0);const fills=Array.isArray(t)?t:(t?.fills||[]);fills.forEach(x=>{const r=Number(x.region_id),c=Number(x.color);if(r>0&&r<=NR&&Number.isFinite(c))a[r]=c});return a}
     let adminRefreshBusy=false;
     refresh=async function(){
       if(adminRefreshBusy)return;
