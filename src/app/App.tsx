@@ -16,6 +16,7 @@ export function App() {
   const [themeName, setThemeName] = useState<ThemeName>('midnight');
   const [completed, setCompleted] = useState(7);
   const [cloudStatus, setCloudStatus] = useState<'loading' | 'saved' | 'saving' | 'offline' | 'error'>('loading');
+  const [cloudReady, setCloudReady] = useState(false);
   const total = 12;
   const plugins = useMemo(() => {
     const registry = new PluginRegistry();
@@ -50,6 +51,7 @@ export function App() {
         if (error) throw error;
         if (!active) return;
         if (data) setCompleted(Math.min(data.total, Math.max(0, data.completed)));
+        setCloudReady(true);
         setCloudStatus('saved');
       } catch (error) {
         console.error('Không thể tải tiến độ từ Supabase:', error);
@@ -64,7 +66,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || cloudStatus === 'loading' || cloudStatus === 'offline' || cloudStatus === 'error') return;
+    if (!isSupabaseConfigured || !cloudReady) return;
     let cancelled = false;
     setCloudStatus('saving');
     const timer = setTimeout(async () => {
@@ -90,7 +92,7 @@ export function App() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [completed, total, cloudStatus]);
+  }, [completed, total, cloudReady]);
 
   function changeTheme(next: ThemeName) { setThemeName(next); applyTheme(next); }
   const cloudLabel = cloudStatus === 'loading' ? 'Connecting to cloud…'
