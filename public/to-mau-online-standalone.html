@@ -417,9 +417,9 @@ const qs=new URLSearchParams(location.search);
       app.className="";app.innerHTML="";$("ttl").textContent="Đội "+name+" · Mã "+code;
       const bar=document.createElement("div");bar.className="bar";
       bar.innerHTML='<span class="tag">'+(locked?"🔒 Đã khóa lượt tô":"● Đang đồng bộ")+'</span><span class="mut">Tô ở thiết bị nào, đồng đội sẽ thấy gần như ngay lập tức.</span><span class="tag" id="pixel-countdown">Chưa bắt đầu</span><span class="mut" id="team-live-count"></span>';
-      app.appendChild(bar);if(!locked)app.appendChild(palette());
+      const canPaint=!locked&&!submissionPending&&!publishedSubmission;app.appendChild(bar);if(canPaint)app.appendChild(palette());
       const stat=document.createElement("div");stat.className="mut";stat.style.textAlign="center";stat.style.margin="4px";stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô";app.appendChild(stat);
-      app.appendChild(paintCanvas(mine,!locked,async(a,region,color)=>{
+      app.appendChild(paintCanvas(mine,canPaint,async(a,region,color)=>{
         mine=a.slice();stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đang lưu…";
         fillQueue.push({region,color});
         if(fillTimer)clearTimeout(fillTimer);
