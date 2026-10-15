@@ -107,6 +107,41 @@ input::placeholder{color:#7f8ba2}
 #pixel-admin-login .admin-actions{display:flex;gap:10px;flex-wrap:wrap}
 #pixel-admin-login .admin-error{min-height:22px;color:#fca5a5;font-size:13px}
 
+
+/* PIXEL Admin Studio — ROFLIX-inspired admin layout, adapted for the live game */
+.pixel-admin-shell{width:min(1400px,100%);margin:0 auto;display:grid;grid-template-columns:228px minmax(0,1fr);min-height:560px;border:1px solid #ffffff16;border-radius:22px;overflow:hidden;background:#0b0f1b;box-shadow:0 28px 90px #0005}
+.pixel-admin-sidebar{display:flex;flex-direction:column;gap:22px;padding:20px 14px;background:linear-gradient(180deg,#111526,#0c101c);border-right:1px solid #ffffff12}
+.pixel-admin-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid #ffffff12;font-size:16px;font-weight:950;letter-spacing:-.4px}
+.pixel-admin-brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#c4b5fd,#60a5fa);color:#080b14;font-weight:1000}
+.pixel-admin-brand small{display:block;color:#8d9ab2;font-size:9px;letter-spacing:1.8px;font-weight:800;margin-top:2px}
+.pixel-admin-nav{display:grid;gap:6px}
+.pixel-admin-nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#9ca8be;text-align:left;box-shadow:none;font-size:13px;font-weight:750}
+.pixel-admin-nav button:hover,.pixel-admin-nav button.active{transform:none;background:linear-gradient(100deg,#8b5cf622,#60a5fa0c);border-color:#a78bfa35;color:#f4f3ff;box-shadow:none}
+.pixel-admin-nav button span{width:22px;text-align:center;font-size:16px}
+.pixel-admin-sidefoot{margin-top:auto;padding:12px 8px 0;border-top:1px solid #ffffff12;color:#66738b;font-size:10px;line-height:1.7}
+.pixel-admin-main{min-width:0;padding:20px;background:radial-gradient(ellipse at 95% 0%,#4338ca12,transparent 35%),#0b0f1b}
+.pixel-admin-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:4px 2px 18px;border-bottom:1px solid #ffffff12}
+.pixel-admin-topbar h2{margin:0;font-size:clamp(19px,2.5vw,26px);letter-spacing:-.8px}
+.pixel-admin-topbar p{margin:4px 0 0;color:#8995ac;font-size:12px}
+.pixel-admin-live{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #34d39935;border-radius:99px;background:#10b98112;color:#6ee7b7;font-size:10px;font-weight:900;letter-spacing:.8px}
+.pixel-admin-live:before{content:"";width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 12px #34d399}
+.pixel-admin-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.pixel-admin-stat{min-width:0;padding:15px;border:1px solid #ffffff12;border-radius:15px;background:linear-gradient(145deg,#ffffff09,#ffffff03)}
+.pixel-admin-stat span{display:block;color:#8f9bb1;font-size:11px;font-weight:700}
+.pixel-admin-stat strong{display:block;margin-top:7px;font-size:27px;line-height:1.1;letter-spacing:-1px}
+.pixel-admin-stat small{display:block;margin-top:7px;color:#78859c;font-size:10px}
+.pixel-admin-content{min-width:0}
+.pixel-admin-content .bar{margin-bottom:13px;background:#111727;border-color:#ffffff12}
+.pixel-admin-content .card{border-radius:16px}
+.pixel-admin-content .grid{margin-top:14px}
+.pixel-admin-content .pixel-room-card{padding:18px;background:linear-gradient(145deg,#151b2b,#101522);border-color:#ffffff18}
+.pixel-admin-content .pixel-room-card .room-code{display:inline-block;margin:8px 0 10px;padding:7px 13px;border:1px solid #a78bfa44;border-radius:11px;background:#8b5cf61a;color:#ddd6fe;font-size:25px;font-weight:950;letter-spacing:4px}
+.pixel-admin-content .pixel-room-card .room-link{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#9ca8be;font-size:12px}
+.pixel-admin-content .pixel-room-card .room-link span{min-width:0;overflow-wrap:anywhere;color:#cbd5e1}
+.pixel-admin-content .mut{font-size:12px}
+@media(max-width:850px){.pixel-admin-shell{grid-template-columns:1fr}.pixel-admin-sidebar{padding:12px;gap:10px;border-right:0;border-bottom:1px solid #ffffff12}.pixel-admin-brand{padding:2px 4px 10px}.pixel-admin-nav{display:flex;overflow:auto;padding-bottom:2px}.pixel-admin-nav button{width:auto;flex:0 0 auto;white-space:nowrap}.pixel-admin-sidefoot{display:none}.pixel-admin-main{padding:14px}}
+@media(max-width:540px){.pixel-admin-shell{border-radius:16px}.pixel-admin-main{padding:10px}.pixel-admin-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.pixel-admin-stat{padding:11px 9px}.pixel-admin-stat strong{font-size:22px}.pixel-admin-stat span{font-size:10px}.pixel-admin-stat small{font-size:9px}.pixel-admin-topbar{align-items:flex-start}.pixel-admin-content .bar{padding:10px}.pixel-admin-nav button{padding:9px 10px;font-size:11px}}
+
 </style></head><body>
 <div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
 <h1 id="ttl">Tô màu online</h1>
@@ -233,21 +268,40 @@ const qs=new URLSearchParams(location.search);
     open();
     function render(){
       if(mode==="key"&&!focus)return;
-      app.className="";app.innerHTML="";const bar=document.createElement("div");bar.className="bar";
+      app.className="";app.innerHTML="";
+      const shell=document.createElement("div");shell.className="pixel-admin-shell";
+      shell.innerHTML='<aside class="pixel-admin-sidebar"><div class="pixel-admin-brand"><span class="pixel-admin-brand-mark">P</span><span>PIXEL <small>ADMIN STUDIO</small></span></div><nav class="pixel-admin-nav" aria-label="Admin navigation"><button data-admin-view="dashboard" class="active"><span>▦</span>Tổng quan</button><button data-admin-view="participants"><span>♙</span>Người chơi</button><button data-admin-view="answer"><span>✎</span>Tô đáp án</button><button data-admin-view="room"><span>⌁</span>Phòng hiện tại</button><button data-admin-view="logout"><span>↪</span>Đăng xuất</button></nav><div class="pixel-admin-sidefoot">KHU QUẢN TRỊ RIÊNG<br>PIXEL COLOR STUDIO · LIVE</div></aside><main class="pixel-admin-main"><header class="pixel-admin-topbar"><div><h2 id="pixel-admin-heading">Trung tâm quản trị</h2><p>Quản lý phiên tô màu và theo dõi tiến độ theo thời gian thực.</p></div><span class="pixel-admin-live">PHIÊN QUẢN TRỊ</span></header><div class="pixel-admin-stats" id="pixel-admin-stats"></div><div class="pixel-admin-content" id="pixel-admin-content"></div></main>';
+      panel.appendChild(shell);
+      const panel=shell.querySelector("#pixel-admin-content");
+      const stats=shell.querySelector("#pixel-admin-stats");
+      const bar=document.createElement("div");bar.className="bar";
       const list=Object.entries(teams).map(([id,t])=>({id,...t}));
+      const nav=shell.querySelector(".pixel-admin-nav");
+      nav.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+        const v=btn.dataset.adminView;
+        if(v==="logout"){try{sessionStorage.removeItem("pixel_admin_token")}catch(e){}location.search="";return}
+        if(v==="answer"){mode="key";focus=null;render();return}
+        if(v==="participants"){mode="view";focus=null;render();setTimeout(()=>panel.querySelector(".grid")?.scrollIntoView({behavior:"smooth",block:"start"}),0);return}
+        if(v==="room"){panel.querySelector(".pixel-room-card")?.scrollIntoView({behavior:"smooth",block:"center"});return}
+        mode="view";focus=null;render();
+      });
+      nav.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.dataset.adminView===(mode==="key"?"answer":"dashboard")));
+      shell.querySelector("#pixel-admin-heading").textContent=focus?"Chi tiết người chơi":mode==="key"?"Tô đáp án":"Tổng quan phòng chơi";
+      stats.innerHTML=focus?"":'<div class="pixel-admin-stat"><span>NGƯỜI CHƠI / NHÓM</span><strong>'+list.length+'</strong><small>Đã tham gia phiên này</small></div><div class="pixel-admin-stat"><span>TRẠNG THÁI PHÒNG</span><strong style="font-size:20px;color:'+(game.locked?'#fca5a5':'#6ee7b7')+'">'+(game.locked?'Đã khóa':'Đang mở')+'</strong><small>'+(game.locked?'Người chơi tạm dừng tô':'Cho phép tiếp tục tô màu')+'</small></div><div class="pixel-admin-stat"><span>TIẾN ĐỘ BÀI</span><strong>'+list.filter(t=>dec(t.f).some(v=>v)).length+'</strong><small>Nhóm đã bắt đầu tô</small></div>';
+
       if(focus){const t=teams[focus];$("ttl").textContent="Nhóm: "+(t?t.name:"");
-        bar.innerHTML='<button id="bk">← Quay lại</button>';app.appendChild(bar);$("bk").onclick=()=>{focus=null;render()};
-        if(t)app.appendChild(paintCanvas(dec(t.f),false));return}
+        bar.innerHTML='<button id="bk">← Quay lại</button>';panel.appendChild(bar);$("bk").onclick=()=>{focus=null;render()};
+        if(t)panel.appendChild(paintCanvas(dec(t.f),false));return}
       $("ttl").textContent=mode==="key"?"Host – tô đáp án":"Host – bảng theo dõi";
       bar.innerHTML=`<button class="${game.locked?'p':'d'}" id="lk">${game.locked?'🔓 Mở khóa game':'🔒 Khóa game'}</button><button id="mk">${mode==="key"?'← Về theo dõi':'✏️ Tô đáp án'}</button><span class="mut">${list.length} nhóm</span>`;
-      app.appendChild(bar);
-      const info=document.createElement("div");info.className="card";info.style.cursor="default";info.style.marginBottom="10px";
-      info.innerHTML='Mã phòng: <b style="display:inline;font-size:22px"></b><br><span class="mut">Link cho người chơi: </span><span id="lnk" style="word-break:break-all"></span> <button id="cp">Sao chép</button>';
-      info.querySelector("b").textContent=code;info.querySelector("#lnk").textContent=link;app.appendChild(info);app.appendChild(status);
+      panel.appendChild(bar);
+      const info=document.createElement("div");info.className="card pixel-room-card";info.style.cursor="default";info.style.marginBottom="10px";
+      info.innerHTML='<div class="mut">PHÒNG ĐANG QUẢN LÝ</div><div class="room-code"></div><div class="room-link"><span>Link tham gia: <span id="lnk"></span></span><button id="cp">Sao chép link</button></div>';
+      info.querySelector(".room-code").textContent=code;info.querySelector("#lnk").textContent=link;panel.appendChild(info);panel.appendChild(status);
       info.querySelector("#cp").onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(link);
       $("lk").onclick=()=>{game.locked=!game.locked;save();bcast();render()};
       $("mk").onclick=()=>{mode=mode==="key"?"view":"key";render()};
-      if(mode==="key"){app.appendChild(palette());let tm;app.appendChild(paintCanvas(dec(game.key),true,a=>{game.key=enc(a);clearTimeout(tm);tm=setTimeout(save,300)}));return}
+      if(mode==="key"){panel.appendChild(palette());let tm;panel.appendChild(paintCanvas(dec(game.key),true,a=>{game.key=enc(a);clearTimeout(tm);tm=setTimeout(save,300)}));return}
       const key=dec(game.key),hasKey=key.some(v=>v),tot=key.filter(v=>v).length;
       const rows=list.map(t=>{const a=dec(t.f);let ok=0,bad=0,n=0;for(let i=1;i<=NR;i++)if(a[i]){n++;key[i]&&a[i]===key[i]?ok++:bad++}return{t,a,ok,bad,n}})
         .sort((x,y)=>hasKey?y.ok-x.ok||x.bad-y.bad:y.n-x.n);
@@ -258,7 +312,7 @@ const qs=new URLSearchParams(location.search);
         c.onclick=()=>{focus=t.id;render()};
         c.querySelector("button").onclick=e=>{e.stopPropagation();if(confirm("Xóa bài của nhóm này?")){teams[t.id].f="";save();state(t.id,true);render()}};
         g.appendChild(c)});
-      if(!rows.length)g.innerHTML='<p class="mut">Chưa có nhóm nào tham gia.</p>';app.appendChild(g)}
+      if(!rows.length)g.innerHTML='<p class="mut">Chưa có nhóm nào tham gia.</p>';panel.appendChild(g)}
     render()}
   /* ---------- NGƯỜI CHƠI ---------- */
   function startPlayer(code){
