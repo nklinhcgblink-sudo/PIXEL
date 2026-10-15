@@ -347,7 +347,8 @@ const qs=new URLSearchParams(location.search);
       try{
         const data=await request("state");connected=true;locked=!!data.locked;
         const next=Array(NR+1).fill(0);(data.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)next[x.region_id]=x.color});
-        const sig=next.join(",")+"|"+locked;
+        const memberSig=(data.members||[]).map(m=>m.id+":"+m.name).sort().join(",");
+        const sig=next.join(",")+"|"+locked+"|"+memberSig;
         if(force||sig!==seenSig){mine=next;seenSig=sig;view()}
       }catch(e){connected=false;if(!name)showJoin();else if(!app.querySelector(".team-error")){const msg=document.createElement("div");msg.className="mut team-error";msg.textContent="Đang thử kết nối lại… "+e.message;app.prepend(msg)}}
     }
