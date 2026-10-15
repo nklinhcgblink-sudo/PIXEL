@@ -326,7 +326,7 @@ const qs=new URLSearchParams(location.search);
     const originalRefresh=refresh;
     refresh=async function(){try{const data=await teamApi("admin_list");cls=data.class;teams=(data.teams||[]).map(t=>({...t,fills:[]}));locked=!!cls.locked;
       const full=await Promise.all(teams.map(async t=>{const d=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"state",code:t.code})}).then(r=>r.json());return {...t,fills:d.fills||[]}}));teams=full;
-      if(mode==="view")render();else updateStats();status.textContent="Đồng bộ trực tuyến · "+new Date().toLocaleTimeString("vi-VN");
+      if(mode==="view"&&!(document.activeElement&&["INPUT","TEXTAREA"].includes(document.activeElement.tagName)))render();else updateStats();status.textContent="Đồng bộ trực tuyến · "+new Date().toLocaleTimeString("vi-VN");
     }catch(e){status.textContent=e.message||"Mất kết nối đồng bộ."}};
     init();
   }
