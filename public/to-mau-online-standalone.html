@@ -83,6 +83,17 @@ input::placeholder{color:#7f8ba2}
 @media(max-width:560px){#pixel-intro{padding:22px}.intro-brand{margin-bottom:42px}.intro-title{letter-spacing:-.065em}.intro-actions{flex-direction:column;align-items:stretch;max-width:320px;margin:30px auto 0}.intro-btn{width:100%}}
 @media(prefers-reduced-motion:reduce){#pixel-intro,.intro-inner,.intro-dot,.intro-loader::after{animation:none!important;transition:none!important}}
 
+
+/* PIXEL front-end deterrents: these do not replace server-side security. */
+#pixel-security-warning{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 25%,#35205f 0%,#111426 45%,#05060b 100%);color:#f8fafc;text-align:center;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+#pixel-security-warning.active{display:flex}
+#pixel-security-warning .security-card{width:min(560px,100%);padding:clamp(26px,5vw,48px);border:1px solid #a78bfa55;border-radius:28px;background:#111827eF;box-shadow:0 30px 100px #0009,0 0 80px #8b5cf622;backdrop-filter:blur(18px)}
+#pixel-security-warning .security-mark{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 22px;border-radius:20px;background:linear-gradient(135deg,#fbbf24,#a78bfa 60%,#60a5fa);color:#090b13;font-size:30px;font-weight:1000}
+#pixel-security-warning h2{margin:0 0 12px;font-size:clamp(25px,5vw,38px);letter-spacing:-1px}
+#pixel-security-warning p{margin:0 auto 22px;max-width:420px;color:#c5ccdc;line-height:1.8}
+#pixel-security-warning button{color:#0a0c14;border:0;background:linear-gradient(110deg,#fbbf24,#c4b5fd 56%,#7dd3fc);padding:13px 22px;border-radius:13px;font-weight:900;cursor:pointer}
+@media(prefers-reduced-motion:no-preference){#pixel-security-warning.active .security-card{animation:pixelSecurityIn .22s ease-out}@keyframes pixelSecurityIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}}
+
 </style></head><body>
 <div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
 <h1 id="ttl">Tô màu online</h1>
@@ -224,5 +235,48 @@ const qs=new URLSearchParams(location.search);
       app.appendChild(bar);if(!locked)app.appendChild(palette());
       app.appendChild(paintCanvas(mine,!locked,a=>{clearTimeout(timer);timer=setTimeout(()=>{try{conn.send({t:"fills",id:pid,f:enc(a)})}catch(e){}},250)}))}
     connect();app.textContent="Đang kết nối tới phòng "+code+"…"}
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  const warning=document.createElement("div");
+  warning.id="pixel-security-warning";
+  warning.setAttribute("role","alertdialog");
+  warning.setAttribute("aria-modal","true");
+  warning.setAttribute("aria-labelledby","pixel-security-title");
+  warning.innerHTML='<div class="security-card"><div class="security-mark">P</div><h2 id="pixel-security-title">Vui lòng không mở DevTools</h2><p>PIXEL khuyến khích người chơi sử dụng giao diện đúng mục đích. Các phím tắt dành cho công cụ nhà phát triển đã bị hạn chế trên trang này.</p><button type="button" id="pixel-security-return">QUAY LẠI PIXEL</button></div>';
+  document.body.appendChild(warning);
+  let priorFocus=null;
+  function showWarning(){
+    priorFocus=document.activeElement;
+    warning.classList.add("active");
+    document.documentElement.style.overflow="hidden";
+    const button=document.getElementById("pixel-security-return");
+    if(button)button.focus({preventScroll:true});
+  }
+  function hideWarning(){
+    warning.classList.remove("active");
+    document.documentElement.style.overflow="";
+    if(priorFocus&&typeof priorFocus.focus==="function")priorFocus.focus({preventScroll:true});
+  }
+  document.getElementById("pixel-security-return").addEventListener("click",hideWarning);
+  document.addEventListener("contextmenu",function(e){e.preventDefault();},true);
+  document.addEventListener("keydown",function(e){
+    const key=(e.key||"").toLowerCase();
+    const devtoolsKey=key==="f12" || (e.ctrlKey&&e.shiftKey&&["i","j","c"].includes(key)) ||
+      (e.metaKey&&e.altKey&&["i","j","c"].includes(key));
+    const viewSource=e.ctrlKey&&key==="u";
+    if(devtoolsKey||viewSource){
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof e.stopImmediatePropagation==="function")e.stopImmediatePropagation();
+      showWarning();
+    }
+    if(e.key==="Escape"&&warning.classList.contains("active")){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  },true);
 })();
 </script></body></html>
