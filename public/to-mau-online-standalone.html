@@ -254,8 +254,21 @@ const qs=new URLSearchParams(location.search);
     const status=document.createElement("div");status.className="mut";status.textContent="Đang kết nối dữ liệu lớp học…";
     const linkFor=t=>location.origin+location.pathname+"?room="+encodeURIComponent(t.code);
     const activeCount=t=>(t.members||[]).length;
+    let adminRealtimeClient=null,adminRealtimeQueued=false;const adminRealtimeChannels=new Map();
+    function connectAdminRealtime(rows){
+      if(!window.supabase)return;
+      try{
+        if(!adminRealtimeClient)adminRealtimeClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLIC_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+        for(const team of rows){if(adminRealtimeChannels.has(team.id))continue;
+          const channel=adminRealtimeClient.channel("pixel-team:"+team.id,{config:{private:true}})
+            .on("broadcast",{event:"*"},()=>{if(adminRealtimeQueued)return;adminRealtimeQueued=true;setTimeout(()=>{adminRealtimeQueued=false;refresh()},80)})
+            .subscribe(state=>{if(state==="CHANNEL_ERROR"||state==="TIMED_OUT")console.warn("PIXEL admin Realtime fallback:",state)});
+          adminRealtimeChannels.set(team.id,channel);
+        }
+      }catch(e){console.warn("PIXEL admin Realtime unavailable; polling fallback remains active.",e)}
+    }
     async function refresh(){
-      try{const data=await teamApi("admin_list");cls=data.class;teams=data.teams||[];locked=!!cls.locked;
+      try{const data=await teamApi("admin_list");cls=data.class;teams=data.teams||[];locked=!!cls.locked;connectAdminRealtime(teams);
         if(mode==="view"||mode==="rank")render();
         else updateStats();
         status.textContent="Đồng bộ trực tuyến · Cập nhật "+new Date().toLocaleTimeString("vi-VN");
