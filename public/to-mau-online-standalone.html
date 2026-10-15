@@ -325,7 +325,7 @@ const qs=new URLSearchParams(location.search);
     function fillsArray(t){const a=Array(NR+1).fill(0);(t?.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)a[x.region_id]=x.color});return a}
     const originalRefresh=refresh;
     refresh=async function(){try{const data=await teamApi("admin_list");cls=data.class;teams=(data.teams||[]).map(t=>({...t,fills:[]}));locked=!!cls.locked;
-      const full=await Promise.all(teams.map(async t=>{const d=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"state",code:t.code})}).then(r=>r.json());return {...t,fills:d.fills||[]}}));teams=full;
+      teams=(data.teams||[]);
       if(mode==="view"&&!(document.activeElement&&["INPUT","TEXTAREA"].includes(document.activeElement.tagName)))render();else updateStats();status.textContent="Đồng bộ trực tuyến · "+new Date().toLocaleTimeString("vi-VN");
     }catch(e){status.textContent=e.message||"Mất kết nối đồng bộ."}};
     init();
@@ -334,14 +334,14 @@ const qs=new URLSearchParams(location.search);
   function startPlayer(code){
     let pid=LS("tm_pid");
     if(!pid){pid="p"+Math.random().toString(36).slice(2,12);LS("tm_pid",pid)}
-    let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",pollTimer=null,sendBusy=false;
+    let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",pollTimer=null,heartbeatTimer=null,sendBusy=false;
     async function request(action,extra={}){const res=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,code,memberId:pid,name,...extra})});const data=await res.json().catch(()=>({error:"Phản hồi máy chủ không hợp lệ."}));if(!res.ok)throw new Error(data.error||"Không thể kết nối đội.");return data}
     function showJoin(errorText=""){
       app.className="";$("ttl").textContent="Tham gia đội "+code;
       app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL TEAM MODE</span><h2>Tô chung một<br><span>bức tranh.</span></h2><p>Nhập tên của bạn để tham gia đội. Mọi thành viên cùng mã sẽ thấy các vùng màu được cập nhật trên thiết bị của nhau.</p></section><div class="bar" style="max-width:560px;margin:0 auto"><input id="member-name" maxlength="32" placeholder="Tên của bạn" style="flex:1" value=""><button class="p" id="join-team">Vào đội →</button><div id="join-error" class="mut" style="width:100%;color:#fca5a5"></div></div>';
       $("member-name").value=name;$("join-error").textContent=errorText;
       $("join-team").onclick=async()=>{const n=$("member-name").value.trim();if(!n){$("join-error").textContent="Hãy nhập tên của bạn.";return}name=n;LS("tm_name_"+code,name);$("join-team").disabled=true;
-        try{await request("join");connected=true;await sync(true);if(!pollTimer)pollTimer=setInterval(()=>sync(false),1500)}catch(e){$("join-error").textContent=e.message;$("join-team").disabled=false}};
+        try{await request("join");connected=true;await sync(true);if(!pollTimer)pollTimer=setInterval(()=>sync(false),1500);if(!heartbeatTimer)heartbeatTimer=setInterval(()=>request("heartbeat").catch(()=>{}),15000)}catch(e){$("join-error").textContent=e.message;$("join-team").disabled=false}};
     }
     async function sync(force){
       try{
@@ -361,7 +361,7 @@ const qs=new URLSearchParams(location.search);
       app.appendChild(paintCanvas(mine,!locked,async(a,region,color)=>{
         mine=a.slice();stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đang lưu…";
         if(sendBusy)return;sendBusy=true;
-        try{await request("fill",{region,color});stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đã lưu";await sync(false)}
+        try{await request("fill",{region,color});stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đã lưu"}
         catch(e){stat.textContent="Chưa lưu được: "+e.message}
         finally{sendBusy=false}
       }));
@@ -369,7 +369,7 @@ const qs=new URLSearchParams(location.search);
       request("state").then(d=>{const names=(d.members||[]).map(m=>m.name);const el=members.querySelector("#members-list");if(el)el.textContent=names.join(", ")||"Chỉ bạn";}).catch(()=>{});
     }
     if(!name){showJoin();return}
-    (async()=>{try{await request("join");await sync(true);pollTimer=setInterval(()=>sync(false),1500)}catch(e){showJoin(e.message)}})();
+    (async()=>{try{await request("join");await sync(true);pollTimer=setInterval(()=>sync(false),1500);heartbeatTimer=setInterval(()=>request("heartbeat").catch(()=>{}),15000)}catch(e){showJoin(e.message)}})();
   }
 
 })();
