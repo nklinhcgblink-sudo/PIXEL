@@ -84,7 +84,7 @@ input::placeholder{color:#7f8ba2}
 @media(prefers-reduced-motion:reduce){#pixel-intro,.intro-inner,.intro-dot,.intro-loader::after{animation:none!important;transition:none!important}}
 
 </style></head><body>
-<div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button><button class="intro-btn" id="intro-skip">BỎ QUA INTRO</button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
+<div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
 <h1 id="ttl">Tô màu online</h1>
 <div id="app" class="mut">Đang tải hình…</div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -143,7 +143,7 @@ const qs=new URLSearchParams(location.search);
   const room=qs.get("room");
   const intro=$("pixel-intro");
   const enter=()=>{intro.classList.add("hidden");setTimeout(()=>{intro.remove();landing()},650)};
-  $("intro-enter").onclick=enter;$("intro-skip").onclick=enter;
+  $("intro-enter").onclick=enter;
   if(!room&&!qs.get("host")){return}
   intro.remove();
   qs.get("host")?startHost():startPlayer(room)
