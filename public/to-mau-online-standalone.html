@@ -334,15 +334,23 @@ const qs=new URLSearchParams(location.search);
   function startPlayer(code){
     let pid=LS("tm_pid");
     if(!pid){pid="p"+Math.random().toString(36).slice(2,12);LS("tm_pid",pid)}
-    let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",pollTimer=null,heartbeatTimer=null,sendBusy=false;
+    let name=LS("tm_name_"+code)||"",mine=Array(NR+1).fill(0),locked=false,connected=false,seenSig="",pollTimer=null,heartbeatTimer=null,sendBusy=false,fillQueue=[],fillTimer=null;
     async function request(action,extra={}){const res=await fetch(TEAM_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,code,memberId:pid,name,...extra})});const data=await res.json().catch(()=>({error:"Phản hồi máy chủ không hợp lệ."}));if(!res.ok)throw new Error(data.error||"Không thể kết nối đội.");return data}
     function showJoin(errorText=""){
       app.className="";$("ttl").textContent="Tham gia đội "+code;
       app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL TEAM MODE</span><h2>Tô chung một<br><span>bức tranh.</span></h2><p>Nhập tên của bạn để tham gia đội. Mọi thành viên cùng mã sẽ thấy các vùng màu được cập nhật trên thiết bị của nhau.</p></section><div class="bar" style="max-width:560px;margin:0 auto"><input id="member-name" maxlength="32" placeholder="Tên của bạn" style="flex:1" value=""><button class="p" id="join-team">Vào đội →</button><div id="join-error" class="mut" style="width:100%;color:#fca5a5"></div></div>';
       $("member-name").value=name;$("join-error").textContent=errorText;
       $("join-team").onclick=async()=>{const n=$("member-name").value.trim();if(!n){$("join-error").textContent="Hãy nhập tên của bạn.";return}name=n;LS("tm_name_"+code,name);$("join-team").disabled=true;
-        try{await request("join");connected=true;await sync(true);if(!pollTimer)pollTimer=setInterval(()=>sync(false),1500);if(!heartbeatTimer)heartbeatTimer=setInterval(()=>request("heartbeat").catch(()=>{}),15000)}catch(e){$("join-error").textContent=e.message;$("join-team").disabled=false}};
+        try{await request("join");connected=true;await sync(true);if(!pollTimer)pollTimer=setInterval(()=>sync(false),1000);if(!heartbeatTimer)heartbeatTimer=setInterval(()=>request("heartbeat").catch(()=>{}),15000)}catch(e){$("join-error").textContent=e.message;$("join-team").disabled=false}};
     }
+    async function flushFills(){
+      if(sendBusy||!fillQueue.length)return;
+      sendBusy=true;const batch=fillQueue.splice(0,100);
+      try{await request("fill",{fills:batch});statUpdate("Đã lưu")}
+      catch(e){fillQueue.unshift(...batch);statUpdate("Đang thử lưu lại…")}
+      finally{sendBusy=false;if(fillQueue.length)fillTimer=setTimeout(flushFills,35)}
+    }
+    function statUpdate(suffix){const el=app.querySelector(".mut[style*=text-align]");if(el)el.textContent=mine.filter(v=>v>0).length+" vùng đã tô · "+suffix}
     async function sync(force){
       try{
         const data=await request("state");connected=true;locked=!!data.locked;
@@ -360,10 +368,9 @@ const qs=new URLSearchParams(location.search);
       const stat=document.createElement("div");stat.className="mut";stat.style.textAlign="center";stat.style.margin="4px";stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô";app.appendChild(stat);
       app.appendChild(paintCanvas(mine,!locked,async(a,region,color)=>{
         mine=a.slice();stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đang lưu…";
-        if(sendBusy)return;sendBusy=true;
-        try{await request("fill",{region,color});stat.textContent=mine.filter(v=>v>0).length+" vùng đã tô · Đã lưu"}
-        catch(e){stat.textContent="Chưa lưu được: "+e.message}
-        finally{sendBusy=false}
+        fillQueue.push({region,color});
+        if(fillTimer)clearTimeout(fillTimer);
+        fillTimer=setTimeout(flushFills,65);
       }));
       const members=document.createElement("div");members.className="bar";members.style.justifyContent="center";members.innerHTML='<span class="mut">Thành viên đang hoạt động: </span><strong id="members-list">Đang tải…</strong>';app.appendChild(members);
       request("state").then(d=>{const names=(d.members||[]).map(m=>m.name);const el=members.querySelector("#members-list");if(el)el.textContent=names.join(", ")||"Chỉ bạn";}).catch(()=>{});
