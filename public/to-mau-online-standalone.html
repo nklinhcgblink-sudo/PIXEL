@@ -183,16 +183,16 @@ const qs=new URLSearchParams(location.search);
     let modal=document.getElementById("pixel-admin-login");
     if(!modal){
       modal=document.createElement("div");modal.id="pixel-admin-login";modal.hidden=true;
-      modal.innerHTML='<section class="admin-box" role="dialog" aria-modal="true" aria-labelledby="pixel-admin-title"><div class="admin-kicker">PIXEL / ADMIN ACCESS</div><h2 id="pixel-admin-title">Đăng nhập quản trị</h2><p>Nhập mật khẩu quản trị để tạo phòng và quản lý phiên chơi.</p><form id="pixel-admin-form"><label for="pixel-admin-password">Mật khẩu quản trị</label><input id="pixel-admin-password" type="password" autocomplete="current-password" required placeholder="Nhập mật khẩu admin"><div class="admin-error" id="pixel-admin-error" role="status"></div><div class="admin-actions"><button class="p" type="submit" id="pixel-admin-submit">Xác thực &amp; tạo phòng →</button><button type="button" id="pixel-admin-cancel">Hủy</button></div></form></section>';
+      modal.innerHTML='<section class="admin-box" role="dialog" aria-modal="true" aria-labelledby="pixel-admin-title"><div class="admin-kicker">PIXEL / ADMIN ACCESS</div><h2 id="pixel-admin-title">Đăng nhập quản trị</h2><p>Nhập mật khẩu quản trị để tạo phòng và quản lý phiên chơi.</p><form id="pixel-admin-form"><label for="pixel-admin-username">Tên đăng nhập</label><input id="pixel-admin-username" type="text" autocomplete="username" required placeholder="Nhập tên đăng nhập"><label for="pixel-admin-password">Mật khẩu quản trị</label><input id="pixel-admin-password" type="password" autocomplete="current-password" required placeholder="Nhập mật khẩu admin"><div class="admin-error" id="pixel-admin-error" role="status"></div><div class="admin-actions"><button class="p" type="submit" id="pixel-admin-submit">Xác thực &amp; tạo phòng →</button><button type="button" id="pixel-admin-cancel">Hủy</button></div></form></section>';
       document.body.appendChild(modal);
       modal.querySelector("#pixel-admin-cancel").onclick=()=>{modal.hidden=true};
       modal.addEventListener("click",e=>{if(e.target===modal)modal.hidden=true});
       modal.querySelector("#pixel-admin-form").onsubmit=async e=>{
         e.preventDefault();
-        const field=modal.querySelector("#pixel-admin-password"),error=modal.querySelector("#pixel-admin-error"),submit=modal.querySelector("#pixel-admin-submit");
+        const usernameField=modal.querySelector("#pixel-admin-username"),field=modal.querySelector("#pixel-admin-password"),error=modal.querySelector("#pixel-admin-error"),submit=modal.querySelector("#pixel-admin-submit");
         error.textContent="";submit.disabled=true;submit.textContent="Đang xác thực…";
         try{
-          const response=await fetch(ADMIN_AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",password:field.value})});
+          const response=await fetch(ADMIN_AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",username:usernameField.value.trim(),password:field.value})});
           const data=await response.json();
           if(!response.ok||!data.token)throw new Error(data.error||"Không thể xác thực. Vui lòng thử lại.");
           sessionStorage.setItem("pixel_admin_token",data.token);
@@ -201,8 +201,8 @@ const qs=new URLSearchParams(location.search);
         finally{submit.disabled=false;submit.textContent="Xác thực & tạo phòng →"}
       };
     }
-    modal.hidden=false;modal.querySelector("#pixel-admin-password").value="";modal.querySelector("#pixel-admin-error").textContent="";
-    modal.querySelector("#pixel-admin-password").focus();
+    modal.hidden=false;modal.querySelector("#pixel-admin-username").value="";modal.querySelector("#pixel-admin-password").value="";modal.querySelector("#pixel-admin-error").textContent="";
+    modal.querySelector("#pixel-admin-username").focus();
   }
   function landing(){$("ttl").textContent="PIXEL — Tô màu cùng nhau";app.className="";
     $("pixel-admin-login")?.remove();
