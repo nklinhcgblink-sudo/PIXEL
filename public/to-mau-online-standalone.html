@@ -267,11 +267,10 @@ const qs=new URLSearchParams(location.search);
       window.__peer=peer}
     open();
     function render(){
-      if(mode==="key"&&!focus)return;
       app.className="";app.innerHTML="";
       const shell=document.createElement("div");shell.className="pixel-admin-shell";
       shell.innerHTML='<aside class="pixel-admin-sidebar"><div class="pixel-admin-brand"><span class="pixel-admin-brand-mark">P</span><span>PIXEL <small>ADMIN STUDIO</small></span></div><nav class="pixel-admin-nav" aria-label="Admin navigation"><button data-admin-view="dashboard" class="active"><span>▦</span>Tổng quan</button><button data-admin-view="participants"><span>♙</span>Người chơi</button><button data-admin-view="answer"><span>✎</span>Tô đáp án</button><button data-admin-view="room"><span>⌁</span>Phòng hiện tại</button><button data-admin-view="logout"><span>↪</span>Đăng xuất</button></nav><div class="pixel-admin-sidefoot">KHU QUẢN TRỊ RIÊNG<br>PIXEL COLOR STUDIO · LIVE</div></aside><main class="pixel-admin-main"><header class="pixel-admin-topbar"><div><h2 id="pixel-admin-heading">Trung tâm quản trị</h2><p>Quản lý phiên tô màu và theo dõi tiến độ theo thời gian thực.</p></div><span class="pixel-admin-live">PHIÊN QUẢN TRỊ</span></header><div class="pixel-admin-stats" id="pixel-admin-stats"></div><div class="pixel-admin-content" id="pixel-admin-content"></div></main>';
-      panel.appendChild(shell);
+      app.appendChild(shell);
       const panel=shell.querySelector("#pixel-admin-content");
       const stats=shell.querySelector("#pixel-admin-stats");
       const bar=document.createElement("div");bar.className="bar";
