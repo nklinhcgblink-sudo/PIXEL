@@ -25,8 +25,6 @@ export function App() {
 
   useEffect(() => {
     let active = true;
-    let saveTimer: ReturnType<typeof setTimeout> | undefined;
-    let userId: string | undefined;
 
     async function loadProgress() {
       if (!isSupabaseConfigured) {
@@ -43,7 +41,6 @@ export function App() {
           user = data.user ?? undefined;
         }
         if (!user) throw new Error('Không tạo được phiên người chơi.');
-        userId = user.id;
 
         const { data, error } = await supabase
           .from('player_progress')
@@ -63,7 +60,6 @@ export function App() {
     void loadProgress();
     return () => {
       active = false;
-      if (saveTimer) clearTimeout(saveTimer);
     };
   }, []);
 
