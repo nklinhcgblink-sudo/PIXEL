@@ -279,7 +279,7 @@ const qs=new URLSearchParams(location.search);
       try{const s=await teamApi("admin_session");cls=s.class;locked=!!cls.locked;
         const a=await teamApi("admin_answer");answer=a.f||"";
         await refresh();
-        refreshTimer=setInterval(refresh,2500);
+        refreshTimer=setInterval(refresh,1200);
       }catch(e){app.textContent=e.message||"Không thể tải bảng quản trị."}
     }
     function updateStats(){
@@ -343,11 +343,27 @@ const qs=new URLSearchParams(location.search);
       panel.appendChild(grid);
     }
     function fillsArray(t){const a=Array(NR+1).fill(0);(t?.fills||[]).forEach(x=>{if(x.region_id>0&&x.region_id<=NR)a[x.region_id]=x.color});return a}
-    const originalRefresh=refresh;
-    refresh=async function(){try{const data=await teamApi("admin_list");cls=data.class;teams=(data.teams||[]).map(t=>({...t,fills:[]}));locked=!!cls.locked;
-      teams=(data.teams||[]);
-      if(mode==="view"&&!(document.activeElement&&["INPUT","TEXTAREA"].includes(document.activeElement.tagName)))render();else updateStats();status.textContent="Đồng bộ trực tuyến · "+new Date().toLocaleTimeString("vi-VN");
-    }catch(e){status.textContent=e.message||"Mất kết nối đồng bộ."}};
+    let adminRefreshBusy=false;
+    refresh=async function(){
+      if(adminRefreshBusy)return;
+      adminRefreshBusy=true;
+      try{
+        const data=await teamApi("admin_list");
+        cls=data.class;
+        teams=data.teams||[];
+        locked=!!cls.locked;
+        // Subscribe admin to the same per-team live broadcast topics as players.
+        // Each fill event refreshes persisted team fills and redraws the shared image.
+        connectAdminRealtime(teams);
+        const editing=document.activeElement&&["INPUT","TEXTAREA"].includes(document.activeElement.tagName);
+        if(mode==="view"&&!editing)render();else updateStats();
+        status.textContent="Đang theo dõi ảnh tô trực tiếp · "+new Date().toLocaleTimeString("vi-VN");
+      }catch(e){
+        status.textContent=e.message||"Mất kết nối đồng bộ.";
+      }finally{
+        adminRefreshBusy=false;
+      }
+    };
     init();
   }
   /* ---------- NGƯỜI CHƠI ---------- */
