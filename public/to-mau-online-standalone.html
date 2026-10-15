@@ -94,6 +94,19 @@ input::placeholder{color:#7f8ba2}
 #pixel-security-warning button{color:#0a0c14;border:0;background:linear-gradient(110deg,#fbbf24,#c4b5fd 56%,#7dd3fc);padding:13px 22px;border-radius:13px;font-weight:900;cursor:pointer}
 @media(prefers-reduced-motion:no-preference){#pixel-security-warning.active .security-card{animation:pixelSecurityIn .22s ease-out}@keyframes pixelSecurityIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}}
 
+
+/* Admin password gate */
+#pixel-admin-login{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;background:#05060beF;backdrop-filter:blur(18px)}
+#pixel-admin-login[hidden]{display:none}
+#pixel-admin-login .admin-box{width:min(440px,100%);padding:28px;border:1px solid #a78bfa55;border-radius:24px;background:linear-gradient(145deg,#17152a,#0d1220);box-shadow:0 28px 100px #0009}
+#pixel-admin-login .admin-kicker{color:#c4b5fd;font-size:11px;font-weight:900;letter-spacing:2px}
+#pixel-admin-login h2{margin:10px 0;font-size:28px;letter-spacing:-.8px}
+#pixel-admin-login p{color:var(--muted);line-height:1.7}
+#pixel-admin-login form{display:grid;gap:12px}
+#pixel-admin-login input{width:100%;min-height:48px}
+#pixel-admin-login .admin-actions{display:flex;gap:10px;flex-wrap:wrap}
+#pixel-admin-login .admin-error{min-height:22px;color:#fca5a5;font-size:13px}
+
 </style></head><body>
 <div id="pixel-intro" role="dialog" aria-label="Chào mừng đến PIXEL"><div class="intro-inner"><div class="intro-brand"><span class="intro-mark">P</span><span>PIXEL / COLOR STUDIO</span></div><div class="intro-status"><span class="intro-dot"></span> ONLINE MULTIPLAYER</div><h2 class="intro-title">Mỗi nét vẽ,<span>một cuộc vui.</span></h2><p class="intro-copy">Tụ họp bạn bè, chọn màu của riêng bạn và cùng nhau hoàn thành một thế giới đầy sắc màu.</p><div class="intro-actions"><button class="intro-btn primary" id="intro-enter">VÀO PIXEL <span aria-hidden="true">↗</span></button></div><div class="intro-loader" aria-hidden="true"></div><div class="intro-hint">CREATE · COLOR · CONNECT</div></div></div>
 <h1 id="ttl">Tô màu online</h1>
@@ -153,15 +166,49 @@ const qs=new URLSearchParams(location.search);
   if(typeof Peer==="undefined"){app.textContent="Không tải được thư viện kết nối (PeerJS). Kiểm tra mạng.";return}
   const room=qs.get("room");
   const intro=$("pixel-intro");
+  const ADMIN_AUTH_URL="https://sblkdgssieogtfoxsfov.supabase.co/functions/v1/pixel-admin-auth";
   const enter=()=>{intro.classList.add("hidden");setTimeout(()=>{intro.remove();landing()},650)};
   $("intro-enter").onclick=enter;
   if(!room&&!qs.get("host")){return}
   intro.remove();
-  qs.get("host")?startHost():startPlayer(room)
+  if(qs.get("host")){
+    let token="";try{token=sessionStorage.getItem("pixel_admin_token")||""}catch(e){}
+    if(!token){landing();return}
+    fetch(ADMIN_AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"validate",token})})
+      .then(r=>r.ok?r.json():Promise.reject(new Error("invalid")))
+      .then(data=>{if(data.valid)startHost();else{try{sessionStorage.removeItem("pixel_admin_token")}catch(e){}landing()}})
+      .catch(()=>{try{sessionStorage.removeItem("pixel_admin_token")}catch(e){}landing()});
+  }else startPlayer(room);
+  function showAdminLogin(){
+    let modal=document.getElementById("pixel-admin-login");
+    if(!modal){
+      modal=document.createElement("div");modal.id="pixel-admin-login";modal.hidden=true;
+      modal.innerHTML='<section class="admin-box" role="dialog" aria-modal="true" aria-labelledby="pixel-admin-title"><div class="admin-kicker">PIXEL / ADMIN ACCESS</div><h2 id="pixel-admin-title">Đăng nhập quản trị</h2><p>Nhập mật khẩu quản trị để tạo phòng và quản lý phiên chơi.</p><form id="pixel-admin-form"><label for="pixel-admin-password">Mật khẩu quản trị</label><input id="pixel-admin-password" type="password" autocomplete="current-password" required placeholder="Nhập mật khẩu admin"><div class="admin-error" id="pixel-admin-error" role="status"></div><div class="admin-actions"><button class="p" type="submit" id="pixel-admin-submit">Xác thực &amp; tạo phòng →</button><button type="button" id="pixel-admin-cancel">Hủy</button></div></form></section>';
+      document.body.appendChild(modal);
+      modal.querySelector("#pixel-admin-cancel").onclick=()=>{modal.hidden=true};
+      modal.addEventListener("click",e=>{if(e.target===modal)modal.hidden=true});
+      modal.querySelector("#pixel-admin-form").onsubmit=async e=>{
+        e.preventDefault();
+        const field=modal.querySelector("#pixel-admin-password"),error=modal.querySelector("#pixel-admin-error"),submit=modal.querySelector("#pixel-admin-submit");
+        error.textContent="";submit.disabled=true;submit.textContent="Đang xác thực…";
+        try{
+          const response=await fetch(ADMIN_AUTH_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"login",password:field.value})});
+          const data=await response.json();
+          if(!response.ok||!data.token)throw new Error(data.error||"Không thể xác thực. Vui lòng thử lại.");
+          sessionStorage.setItem("pixel_admin_token",data.token);
+          location.search="?host=1";
+        }catch(err){error.textContent=err.message||"Lỗi kết nối. Vui lòng thử lại."}
+        finally{submit.disabled=false;submit.textContent="Xác thực & tạo phòng →"}
+      };
+    }
+    modal.hidden=false;modal.querySelector("#pixel-admin-password").value="";modal.querySelector("#pixel-admin-error").textContent="";
+    modal.querySelector("#pixel-admin-password").focus();
+  }
   function landing(){$("ttl").textContent="PIXEL — Tô màu cùng nhau";app.className="";
-    app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL COLOR STUDIO</span><h2>Một nét vẽ.<br><span>Vô vàn sắc màu.</span></h2><p>Tạo phòng chơi cùng bạn bè hoặc nhập mã phòng để bắt đầu tô màu, so tài sáng tạo và cùng hoàn thành bức tranh.</p></section><section class="entry-grid" aria-label="Chọn cách chơi"><article class="entry-card"><span class="entry-icon" aria-hidden="true">✦</span><h3>Tạo phòng chơi</h3><p>Mở phòng mới, chia sẻ mã và theo dõi tiến độ của các nhóm theo thời gian thực.</p><button class="p" id="h">Tạo phòng ngay <span aria-hidden="true">→</span></button></article><article class="entry-card join"><span class="entry-icon" aria-hidden="true">↗</span><h3>Tham gia phòng</h3><p>Đã có mã phòng? Nhập mã 4 chữ số bên dưới để vào chơi cùng mọi người.</p><input id="cd" placeholder="Nhập mã phòng (4 số)" inputmode="numeric" maxlength="4" aria-label="Mã phòng"><button id="j">Vào phòng chơi <span aria-hidden="true">→</span></button></article></section><footer class="footnote">CHƠI CÙNG NHAU · TÔ MÀU · TẠO NIỀM VUI</footer>';
-    $("h").onclick=()=>{location.search="?host=1"};
-    $("j").onclick=()=>{const c=$("cd").value.trim();if(c)location.search="?room="+c}}
+    $("pixel-admin-login")?.remove();
+    app.innerHTML='<section class="welcome"><span class="eyebrow">PIXEL COLOR STUDIO</span><h2>Một nét vẽ.<br><span>Vô vàn sắc màu.</span></h2><p>Tạo phòng chơi cùng bạn bè hoặc nhập mã phòng để bắt đầu tô màu, so tài sáng tạo và cùng hoàn thành bức tranh.</p></section><section class="entry-grid" aria-label="Chọn cách chơi"><article class="entry-card"><span class="entry-icon" aria-hidden="true">⚿</span><h3>Khu vực quản trị</h3><p>Dành riêng cho quản trị viên. Xác thực mật khẩu trước khi tạo phòng và quản lý tiến độ các nhóm.</p><button class="p" id="h">Đăng nhập Admin <span aria-hidden="true">→</span></button></article><article class="entry-card join"><span class="entry-icon" aria-hidden="true">↗</span><h3>Tham gia phòng</h3><p>Đã có mã phòng? Nhập mã 4 chữ số bên dưới để vào chơi cùng mọi người.</p><input id="cd" placeholder="Nhập mã phòng (4 số)" inputmode="numeric" maxlength="4" aria-label="Mã phòng"><button id="j">Vào phòng chơi <span aria-hidden="true">→</span></button></article></section><footer class="footnote">CHƠI CÙNG NHAU · TÔ MÀU · TẠO NIỀM VUI</footer>';
+    $("h").onclick=showAdminLogin;
+    $("j").onclick=()=>{const c=$("cd").value.trim();if(c)location.search="?room="+encodeURIComponent(c)}}
   /* ---------- HOST ---------- */
   function startHost(){
     let code=LS("tm_code");if(!code){code=String(Math.floor(1000+Math.random()*9000));LS("tm_code",code)}
