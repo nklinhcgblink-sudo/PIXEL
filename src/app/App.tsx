@@ -210,10 +210,22 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (authReady && page === 'dashboard' && !signedIn) {
+    if (!authReady || page !== 'dashboard' || signedIn) return;
+    let mounted = true;
+    supabase.auth.getSession().then(({data}) => {
+      if (!mounted) return;
+      if (data.session) {
+        setSignedIn(true);
+        return;
+      }
       window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/login');
       setPage('login');
-    }
+    }).catch(() => {
+      if (!mounted) return;
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/login');
+      setPage('login');
+    });
+    return () => { mounted = false; };
   }, [authReady,page,signedIn]);
 
   if (page==='login'||page==='signup') return <Auth mode={page} go={go}/>;
