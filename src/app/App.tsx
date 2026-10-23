@@ -55,11 +55,31 @@ function Auth({mode,go}:{mode:'login'|'signup';go:(p:Page)=>void}) {
 }
 function Learning({page,go}:{page:'library'|'practice';go:(p:Page)=>void}){const[filter,setFilter]=useState('Tất cả');const[answer,setAnswer]=useState<number|null>(null);const[checked,setChecked]=useState(false);return <div className="learning-page"><header className="site-header"><Brand onClick={()=>go('home')}/><nav className="site-nav"><button onClick={()=>go('home')}>Trang chủ</button><button onClick={()=>go('library')}>Thư viện</button><button onClick={()=>go('practice')}>Luyện tập</button></nav><div className="header-actions"><button className="login-link" onClick={()=>go('login')}>Đăng nhập</button><button className="button button-primary button-small" onClick={()=>go('signup')}>Học miễn phí ↗</button></div></header><main className="learning-content"><button className="back-home" onClick={()=>go('home')}>← Trang chủ</button>{page==='library'?<><span className="section-kicker">THƯ VIỆN PIXEL EDU</span><h1>Chọn điều bạn muốn<br/><em>hiểu sâu hơn hôm nay.</em></h1><p className="learning-intro">Khám phá bài học ngắn gọn, rõ ràng dành cho học sinh THPT.</p><div className="filter-row">{['Tất cả','Lớp 10','Lớp 11','Lớp 12'].map(x=><button key={x} className={filter===x?'filter-active':''} onClick={()=>setFilter(x)}>{x}</button>)}</div><div className="library-grid">{subjects.map((s,i)=><article className="library-card" key={s[0]}><div className={'library-art '+s[2]}><span>{s[1]}</span><small>{filter==='Tất cả'?'LỚP '+(10+i%3):filter.toUpperCase()}</small></div><div className="library-card-body"><span className="section-kicker">{s[0].toUpperCase()}</span><h3>{['Nền tảng kiến thức','Chuyên đề trọng tâm','Hiểu từ ví dụ','Đọc hiểu & phân tích','Tự tin sử dụng','Khám phá thế giới'][i]}</h3><p>{s[3]}</p><button onClick={()=>go('practice')}>Học thử miễn phí →</button></div></article>)}</div></>:<div className="practice-layout"><div className="practice-main"><span className="section-kicker">HỌC THỬ · TOÁN HỌC</span><h1>Thử sức với một câu hỏi nhé.</h1><p>Chọn đáp án bạn cho là đúng. Bạn sẽ nhận được lời giải ngay sau đó.</p><div className="practice-card"><div className="practice-top"><span>CÂU HỎI 01</span><span>⏱ 2 phút</span></div><h2>Đạo hàm của hàm số f(x) = x² là gì?</h2>{['x','2x','x²','2'].map((v,i)=><button key={v} className={'answer-option '+(answer===i?'answer-selected ':'')+(checked&&i===1?'answer-correct':'')} onClick={()=>{setAnswer(i);setChecked(false)}}><span>{String.fromCharCode(65+i)}</span>{v}{checked&&i===1&&<b>✓</b>}</button>)}{checked&&<div className={'answer-feedback '+(answer===1?'good':'')}><b>{answer===1?'Chính xác!':'Cùng xem lại nhé.'}</b><p>Áp dụng quy tắc đạo hàm lũy thừa: (xⁿ)′ = nxⁿ⁻¹. Với n = 2, kết quả là 2x.</p></div>}<button className="button button-primary answer-submit" disabled={answer===null} onClick={()=>setChecked(true)}>Kiểm tra đáp án →</button></div></div><aside className="practice-aside"><div className="practice-aside-icon">✦</div><h3>Học bằng cách thử</h3><p>Mỗi câu hỏi là một cơ hội hiểu sâu hơn. Sai cũng không sao — lời giải sẽ giúp bạn tiến bộ.</p><div className="practice-mini-stat"><b>+20 XP</b><span>khi hoàn thành</span></div><button className="text-action" onClick={()=>go('signup')}>Lưu tiến độ của bạn →</button></aside></div>}</main></div>}
 function Dashboard({go}:{go:(p:Page)=>void}){const[active,setActive]=useState('Tổng quan');return <div className="dashboard-page"><aside className="sidebar"><Brand onClick={()=>go('home')}/><div className="sidebar-label">KHÔNG GIAN HỌC TẬP</div>{[['⌂','Tổng quan'],['▦','Môn học'],['▤','Thư viện'],['✳','Luyện tập'],['♜','Thành tích']].map(([icon,label])=><button key={label} className={'nav-item '+(active===label?'active':'')} onClick={()=>{setActive(label);if(label==='Thư viện')go('library');if(label==='Luyện tập')go('practice')}}><span>{icon}</span>{label}</button>)}<div className="sidebar-promo"><b>Mỗi ngày một chút,<br/>tiến bộ thật nhiều.</b><p>Học đều đặn để chạm đến mục tiêu của bạn.</p></div><button className="nav-item" onClick={()=>go('home')}>↩ Về trang chủ</button></aside><main className="dashboard-main"><header className="dashboard-top"><div><span className="section-kicker">KHÔNG GIAN CỦA BẠN</span><h1>Chào bạn, nhà khám phá! ✦</h1><p>Sẵn sàng học thêm điều mới hôm nay chưa?</p></div><button className="button button-primary" onClick={()=>go('practice')}>Bắt đầu luyện tập ↗</button></header><div className="dashboard-stats"><article><span>✦</span><small>Tổng XP</small><b>2.450 <em>XP</em></b><div className="fake-progress"><i/></div><p>Còn 550 XP để lên cấp 6</p></article><article><span>🔥</span><small>Chuỗi ngày học</small><b>7 ngày</b><p>Bạn đang giữ nhịp rất tốt!</p></article><article><span>✓</span><small>Bài học hoàn thành</small><b>24 <em>/ 40</em></b><div className="fake-progress"><i/></div><p>60% mục tiêu tháng</p></article></div><div className="dashboard-section-title"><div><span className="section-kicker">BẮT ĐẦU TỪ ĐÂU?</span><h2>Tiếp tục khám phá</h2></div><button className="text-action" onClick={()=>go('library')}>Mở thư viện →</button></div><div className="dashboard-lessons">{lessons.map(l=><article key={l[1]}><div className={'subject-symbol '+l[3]}>{l[4]}</div><div><small>{l[0]} · {l[2]}</small><h3>{l[1]}</h3><p>Kiến thức cô đọng và ví dụ dễ hiểu.</p></div><button className="button button-outline" onClick={()=>go('practice')}>Học tiếp →</button></article>)}</div><div className="dashboard-bottom"><div><span className="section-kicker">MỤC TIÊU TUẦN NÀY</span><h2>Chậm mà chắc, bạn đang tiến bộ.</h2><p>Học một chút mỗi ngày để kiến thức ở lại lâu hơn.</p><button className="button button-primary" onClick={()=>go('practice')}>Luyện tập ngay ↗</button></div><div className="dashboard-streak"><span>🔥</span><b>7 ngày</b><small>chuỗi học tập</small><div>✓　✓　✓　✓　✓　✓　○</div></div></div><button className="dashboard-home-link" onClick={()=>go('home')}>← Quay về trang giới thiệu PIXEL EDU</button></main></div>}
+function readRoute(): Page {
+  const route = window.location.hash.replace(/^#\/?/, '').split('?')[0];
+  return ['home','login','signup','dashboard','library','practice'].includes(route) ? route as Page : 'home';
+}
+
 export function App() {
-  const [page,setPage] = useState<Page>('home');
+  const [page,setPage] = useState<Page>(() => readRoute());
   const [authReady,setAuthReady] = useState(false);
   const [signedIn,setSignedIn] = useState(false);
-  const go = (next:Page) => { setPage(next); window.scrollTo({top:0,behavior:'smooth'}); };
+  const go = (next:Page) => {
+    const nextHash = next === 'home' ? '' : '#/' + next;
+    window.history.pushState(null, '', window.location.pathname + window.location.search + nextHash);
+    setPage(next);
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  useEffect(() => {
+    const syncRoute = () => setPage(readRoute());
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('hashchange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('hashchange', syncRoute);
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -80,7 +100,10 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (authReady && page === 'dashboard' && !signedIn) setPage('login');
+    if (authReady && page === 'dashboard' && !signedIn) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/login');
+      setPage('login');
+    }
   }, [authReady,page,signedIn]);
 
   if (page==='login'||page==='signup') return <Auth mode={page} go={go}/>;
