@@ -34,7 +34,13 @@ function Auth({mode,go}:{mode:'login'|'signup';go:(p:Page)=>void}) {
           options: { data: { display_name: name.trim(), grade_level: grade } }
         });
         if (authError) throw authError;
-        if (data.session) {
+        if (data.session && data.user) {
+          const { error: profileError } = await supabase.from('edu_profiles').upsert({
+            user_id: data.user.id,
+            display_name: name.trim() || email.trim().split('@')[0],
+            grade: Number(grade)
+          }, { onConflict: 'user_id' });
+          if (profileError) setNotice('Tài khoản đã được tạo, nhưng chưa lưu được hồ sơ học tập: ' + profileError.message);
           go('dashboard');
         } else {
           setNotice('Tài khoản đã được gửi đăng ký. Nếu dự án yêu cầu xác nhận email, hãy mở email để xác nhận trước khi đăng nhập.');
@@ -93,7 +99,61 @@ function Learning({page,go}:{page:'library'|'practice';go:(p:Page)=>void}) {
 
   return <div className="learning-page"><header className="site-header"><Brand onClick={()=>go('home')}/><nav className="site-nav"><button onClick={()=>go('home')}>Trang chủ</button><button onClick={()=>go('library')}>Thư viện</button><button onClick={()=>go('practice')}>Luyện tập</button></nav><div className="header-actions"><button className="login-link" onClick={()=>go('login')}>Đăng nhập</button><button className="button button-primary button-small" onClick={()=>go('signup')}>Học miễn phí ↗</button></div></header><main className="learning-content"><button className="back-home" onClick={()=>go('home')}>← Trang chủ</button>{page==='library'?<><span className="section-kicker">THƯ VIỆN PIXEL EDU</span><h1>Chọn điều bạn muốn<br/><em>hiểu sâu hơn hôm nay.</em></h1><p className="learning-intro">Nội dung lấy từ danh mục bài học đã xuất bản trên PIXEL EDU.</p><div className="filter-row">{['Tất cả','Lớp 10','Lớp 11','Lớp 12'].map(x=><button key={x} className={filter===x?'filter-active':''} onClick={()=>setFilter(x)}>{x}</button>)}</div>{dataError&&<div className="data-message" role="alert">{dataError}</div>}{loading?<div className="data-message">Đang tải môn học và bài học…</div>:<><div className="subject-chip-row">{subjectsData.map(subject=><span className={'subject-chip '+accentClass(subject.accent)} key={subject.id}>{subject.icon} {subject.name}</span>)}</div><div className="library-grid">{visibleLessons.map(lesson=>{const subject=subjectById.get(lesson.subject_id);return <article className="library-card" key={lesson.id}><div className={'library-art '+accentClass(subject?.accent||'violet')}><span>{subject?.icon||'✦'}</span><small>LỚP {lesson.grade}</small></div><div className="library-card-body"><span className="section-kicker">{subject?.name||'MÔN HỌC'}</span><h3>{lesson.title}</h3><p>{lesson.summary||lesson.chapter||'Bài học theo chương trình THPT.'}</p><div className="lesson-db-meta">{lesson.duration_minutes} phút{lesson.chapter?' · '+lesson.chapter:''}</div><button onClick={()=>go('practice')}>Mở bài học →</button></div></article>})}</div>{!visibleLessons.length&&<div className="data-message">Chưa có bài học đã xuất bản cho bộ lọc này.</div>}</>}</>:<div className="practice-layout"><div className="practice-main"><span className="section-kicker">LUYỆN TẬP PIXEL EDU</span><h1>Thử sức với một câu hỏi nhé.</h1><p>Đây hiện là câu hỏi minh họa giao diện. Dữ liệu câu hỏi có trong Supabase nhưng chưa được mở trực tiếp cho client vì bảng đáp án cần cơ chế chấm điểm không tiết lộ đáp án đúng.</p><div className="practice-card"><div className="practice-top"><span>CÂU HỎI MINH HỌA</span><span>TOÁN HỌC</span></div><h2>Đạo hàm của hàm số f(x) = x² là gì?</h2>{['x','2x','x²','2'].map((v,i)=><button key={v} className={'answer-option '+(answer===i?'answer-selected ':'')+(checked&&i===1?'answer-correct':'')} onClick={()=>{setAnswer(i);setChecked(false)}}><span>{String.fromCharCode(65+i)}</span>{v}{checked&&i===1&&<b>✓</b>}</button>)}{checked&&<div className={'answer-feedback '+(answer===1?'good':'')}><b>{answer===1?'Đáp án minh họa chính xác':'Đáp án minh họa chưa đúng'}</b><p>Quy tắc đạo hàm lũy thừa: (xⁿ)′ = nxⁿ⁻¹. Với n = 2, kết quả là 2x. Phần này chưa ghi kết quả vào hồ sơ học tập.</p></div>}<button className="button button-primary answer-submit" disabled={answer===null} onClick={()=>setChecked(true)}>Kiểm tra câu minh họa →</button></div></div><aside className="practice-aside"><div className="practice-aside-icon">✦</div><h3>Đang hoàn thiện chấm điểm an toàn</h3><p>PIXEL EDU sẽ chỉ ghi nhận điểm và tiến độ sau khi API chấm bài được bảo vệ, không gửi đáp án đúng xuống trình duyệt trước khi nộp.</p><button className="text-action" onClick={()=>go('library')}>Quay lại thư viện →</button></aside></div>}</main></div>
 }
-function Dashboard({go}:{go:(p:Page)=>void}){const[active,setActive]=useState('Tổng quan');return <div className="dashboard-page"><aside className="sidebar"><Brand onClick={()=>go('home')}/><div className="sidebar-label">KHÔNG GIAN HỌC TẬP</div>{[['⌂','Tổng quan'],['▦','Môn học'],['▤','Thư viện'],['✳','Luyện tập'],['♜','Thành tích']].map(([icon,label])=><button key={label} className={'nav-item '+(active===label?'active':'')} onClick={()=>{setActive(label);if(label==='Thư viện')go('library');if(label==='Luyện tập')go('practice')}}><span>{icon}</span>{label}</button>)}<div className="sidebar-promo"><b>Mỗi ngày một chút,<br/>tiến bộ thật nhiều.</b><p>Học đều đặn để chạm đến mục tiêu của bạn.</p></div><button className="nav-item" onClick={()=>go('home')}>↩ Về trang chủ</button></aside><main className="dashboard-main"><header className="dashboard-top"><div><span className="section-kicker">KHÔNG GIAN CỦA BẠN</span><h1>Chào bạn, nhà khám phá! ✦</h1><p>Sẵn sàng học thêm điều mới hôm nay chưa?</p></div><button className="button button-primary" onClick={()=>go('practice')}>Bắt đầu luyện tập ↗</button></header><div className="dashboard-stats"><article><span>✦</span><small>Tổng XP</small><b>2.450 <em>XP</em></b><div className="fake-progress"><i/></div><p>Còn 550 XP để lên cấp 6</p></article><article><span>🔥</span><small>Chuỗi ngày học</small><b>7 ngày</b><p>Bạn đang giữ nhịp rất tốt!</p></article><article><span>✓</span><small>Bài học hoàn thành</small><b>24 <em>/ 40</em></b><div className="fake-progress"><i/></div><p>60% mục tiêu tháng</p></article></div><div className="dashboard-section-title"><div><span className="section-kicker">BẮT ĐẦU TỪ ĐÂU?</span><h2>Tiếp tục khám phá</h2></div><button className="text-action" onClick={()=>go('library')}>Mở thư viện →</button></div><div className="dashboard-lessons">{lessons.map(l=><article key={l[1]}><div className={'subject-symbol '+l[3]}>{l[4]}</div><div><small>{l[0]} · {l[2]}</small><h3>{l[1]}</h3><p>Kiến thức cô đọng và ví dụ dễ hiểu.</p></div><button className="button button-outline" onClick={()=>go('practice')}>Học tiếp →</button></article>)}</div><div className="dashboard-bottom"><div><span className="section-kicker">MỤC TIÊU TUẦN NÀY</span><h2>Chậm mà chắc, bạn đang tiến bộ.</h2><p>Học một chút mỗi ngày để kiến thức ở lại lâu hơn.</p><button className="button button-primary" onClick={()=>go('practice')}>Luyện tập ngay ↗</button></div><div className="dashboard-streak"><span>🔥</span><b>7 ngày</b><small>chuỗi học tập</small><div>✓　✓　✓　✓　✓　✓　○</div></div></div><button className="dashboard-home-link" onClick={()=>go('home')}>← Quay về trang giới thiệu PIXEL EDU</button></main></div>}
+function Dashboard({go}:{go:(p:Page)=>void}) {
+  const [active,setActive]=useState('Tổng quan');
+  const [profile,setProfile]=useState<{display_name:string;grade:number|null;xp:number;streak_days:number}|null>(null);
+  const [completedCount,setCompletedCount]=useState(0);
+  const [totalLessons,setTotalLessons]=useState(0);
+  const [dashboardError,setDashboardError]=useState('');
+  const [busy,setBusy]=useState(true);
+  const [signingOut,setSigningOut]=useState(false);
+
+  useEffect(()=>{
+    let activeRequest=true;
+    async function loadDashboard(){
+      setBusy(true);
+      setDashboardError('');
+      const {data:userData,error:userError}=await supabase.auth.getUser();
+      if(userError||!userData.user){
+        if(activeRequest){setDashboardError('Không xác định được phiên đăng nhập. Vui lòng đăng nhập lại.');setBusy(false);}
+        return;
+      }
+      const userId=userData.user.id;
+      const [profileResult,progressResult,lessonsResult]=await Promise.all([
+        supabase.from('edu_profiles').select('display_name,grade,xp,streak_days').eq('user_id',userId).maybeSingle(),
+        supabase.from('edu_learning_progress').select('lesson_id,status').eq('user_id',userId),
+        supabase.from('edu_lessons').select('id',{count:'exact',head:true}).eq('published',true)
+      ]);
+      if(!activeRequest)return;
+      if(profileResult.error||progressResult.error||lessonsResult.error){
+        setDashboardError('Một phần dữ liệu chưa tải được. Hãy kiểm tra quyền truy cập RLS trong Supabase.');
+      } else {
+        setProfile(profileResult.data as {display_name:string;grade:number|null;xp:number;streak_days:number}|null);
+        setCompletedCount((progressResult.data||[]).filter(row=>row.status==='completed').length);
+        setTotalLessons(lessonsResult.count||0);
+      }
+      setBusy(false);
+    }
+    void loadDashboard();
+    return ()=>{activeRequest=false;};
+  },[]);
+
+  async function logout(){
+    setSigningOut(true);
+    const {error}=await supabase.auth.signOut();
+    setSigningOut(false);
+    if(error){setDashboardError('Không thể đăng xuất: '+error.message);return;}
+    go('home');
+  }
+
+  const displayName=profile?.display_name||'nhà khám phá';
+  const xp=profile?.xp||0;
+  const streak=profile?.streak_days||0;
+  const completion=totalLessons?Math.min(100,Math.round(completedCount/totalLessons*100)):0;
+
+  return <div className="dashboard-page"><aside className="sidebar"><Brand onClick={()=>go('home')}/><div className="sidebar-label">KHÔNG GIAN HỌC TẬP</div>{[['⌂','Tổng quan'],['▦','Môn học'],['▤','Thư viện'],['✳','Luyện tập'],['♜','Thành tích']].map(([icon,label])=><button key={label} className={'nav-item '+(active===label?'active':'')} onClick={()=>{setActive(label);if(label==='Thư viện'||label==='Môn học')go('library');if(label==='Luyện tập')go('practice')}}><span>{icon}</span>{label}</button>)}<div className="sidebar-promo"><b>Mỗi ngày một chút,<br/>tiến bộ thật nhiều.</b><p>Học đều đặn để chạm đến mục tiêu của bạn.</p></div><button className="nav-item" onClick={()=>go('home')}>↩ Về trang chủ</button><button className="nav-item" onClick={()=>void logout()} disabled={signingOut}>{signingOut?'Đang đăng xuất…':'⇥ Đăng xuất'}</button></aside><main className="dashboard-main"><header className="dashboard-top"><div><span className="section-kicker">KHÔNG GIAN CỦA BẠN</span><h1>Chào {displayName}! ✦</h1><p>{profile?.grade ? 'Học sinh lớp ' + profile.grade + ' · ' : ''}Dữ liệu hiển thị lấy từ tài khoản PIXEL EDU của bạn.</p></div><button className="button button-primary" onClick={()=>go('practice')}>Bắt đầu luyện tập ↗</button></header>{dashboardError&&<div className="data-message" role="alert">{dashboardError}</div>}{busy&&<div className="data-message">Đang tải hồ sơ và tiến độ học tập…</div>}<div className="dashboard-stats"><article><span>✦</span><small>Tổng XP</small><b>{xp.toLocaleString('vi-VN')} <em>XP</em></b><p>{profile?'Theo hồ sơ của bạn':'Hồ sơ chưa được tạo'}</p></article><article><span>🔥</span><small>Chuỗi ngày học</small><b>{streak} ngày</b><p>Được lấy từ hồ sơ đã lưu</p></article><article><span>✓</span><small>Bài học hoàn thành</small><b>{completedCount} <em>/ {totalLessons}</em></b><div className="fake-progress"><i style={{width:completion+'%'}}/></div><p>{completion}% bài học đã hoàn thành</p></article></div><div className="dashboard-section-title"><div><span className="section-kicker">BẮT ĐẦU TỪ ĐÂU?</span><h2>Tiếp tục khám phá</h2></div><button className="text-action" onClick={()=>go('library')}>Mở thư viện →</button></div><div className="dashboard-lessons"><article><div className="subject-symbol violet">∑</div><div><small>Thư viện học tập</small><h3>Chọn bài học đã xuất bản</h3><p>Mở thư viện để xem nội dung đang có trên hệ thống.</p></div><button className="button button-outline" onClick={()=>go('library')}>Mở thư viện →</button></article><article><div className="subject-symbol blue">✓</div><div><small>Luyện tập</small><h3>Ôn lại kiến thức</h3><p>Phần chấm điểm và lưu kết quả đang được hoàn thiện.</p></div><button className="button button-outline" onClick={()=>go('practice')}>Luyện tập →</button></article></div><div className="dashboard-bottom"><div><span className="section-kicker">HÀNH TRÌNH HỌC TẬP</span><h2>Tiến bộ dựa trên dữ liệu thật.</h2><p>XP, chuỗi ngày và bài học hoàn thành sẽ cập nhật khi các thao tác học được lưu thành công.</p><button className="button button-primary" onClick={()=>go('library')}>Khám phá thư viện ↗</button></div><div className="dashboard-streak"><span>✦</span><b>{completion}%</b><small>hoàn thành bài học</small><div>{completedCount} / {totalLessons}</div></div></div><button className="dashboard-home-link" onClick={()=>go('home')}>← Quay về trang giới thiệu PIXEL EDU</button></main></div>
+}
+
 function readRoute(): Page {
   const route = window.location.hash.replace(/^#\/?/, '').split('?')[0];
   return ['home','login','signup','dashboard','library','practice'].includes(route) ? route as Page : 'home';
