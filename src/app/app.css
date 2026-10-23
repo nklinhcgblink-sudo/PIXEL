@@ -37,3 +37,11 @@ body{background:#080a12;color:#f5f3ff}
 .practice-card,.practice-aside{background:#151320;border-color:#ffffff19}.practice-card h2,.practice-aside h3{color:#f3efff}.answer-option{background:#100f19;border-color:#ffffff19;color:#e5e0f5}.answer-option>span{background:#27213a;color:#d4c6ff}.answer-selected{background:#211832!important}.practice-aside p{color:#aaa4c1}.practice-mini-stat{background:#211b31}
 .dashboard-page{background:#0b0a13;color:#f5f3ff}.dashboard-page .sidebar{background:#100f19;border-color:#ffffff14}.nav-item{color:#aaa4c1}.nav-item.active{background:#29203f;color:#c4b5fd}.sidebar-label{color:#77718f}.sidebar-promo{background:#211a33;color:#eee8ff}.sidebar-promo p{color:#aaa0c7}.dashboard-top h1,.dashboard-section-title h2,.dashboard-bottom h2{color:#f5f3ff}.dashboard-top p,.dashboard-stats small,.dashboard-stats p,.dashboard-lessons small,.dashboard-lessons p,.dashboard-bottom p{color:#a9a3c1}.dashboard-stats article,.dashboard-lessons article,.dashboard-streak{background:#151320;border-color:#ffffff16}.dashboard-stats b,.dashboard-lessons h3{color:#f4f0ff}.dashboard-stats em{color:#b5a0ff}.dashboard-bottom{background:radial-gradient(ellipse at 80% 20%,#4a347d66,transparent 50%),#171322}.dashboard-streak small{color:#aaa4c1}.dashboard-home-link{color:#b8a4ff}
 @media(max-width:760px){.site-header{background:#0b0a13}.hero-section{min-height:auto}.hero-art{filter:saturate(.9)}.trust-strip{background:#11101b}.cta-section{box-shadow:0 20px 60px #0004}}
+
+
+/* RoHub-inspired auth feedback states */
+.auth-message{padding:12px 14px;border:1px solid;border-radius:12px;font-size:11px;line-height:1.65;overflow-wrap:anywhere}
+.auth-error{color:#fecaca;background:rgba(127,29,29,.22);border-color:rgba(248,113,113,.35)}
+.auth-notice{color:#bbf7d0;background:rgba(20,83,45,.22);border-color:rgba(74,222,128,.3)}
+.auth-submit:disabled{opacity:.65;cursor:wait;transform:none}
+.auth-loading{min-height:100vh;display:grid;place-items:center;background:#080b14;color:#c4b5fd;font:600 14px Inter,system-ui,sans-serif}
