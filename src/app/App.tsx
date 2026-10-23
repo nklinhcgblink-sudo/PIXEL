@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import './app.css';
 type Page='home'|'login'|'signup'|'dashboard'|'library'|'practice';
@@ -17,7 +17,7 @@ function Auth({mode,go}:{mode:'login'|'signup';go:(p:Page)=>void}) {
   const [name,setName] = useState('');
   const [grade,setGrade] = useState('12');
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     setNotice('');
