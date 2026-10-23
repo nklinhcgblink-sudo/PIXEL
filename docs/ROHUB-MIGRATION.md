@@ -40,13 +40,25 @@
 
 ## Commit plan
 
-- Phase 1: establish migration branch, document audit and design tokens.
-- Phase 2: establish shared app shell/navigation and explicit routes.
-- Phase 3: wire authentication to the existing Supabase project with clear configuration/error states.
-- Phase 4: define and implement learning data access only after inspecting existing tables and RLS; no destructive schema changes.
-- Phase 5: port education-specific admin tools and theme preview in separate commits.
-- Phase 6: run typecheck/build/tests, inspect CI/deployment status, and report unverified areas.
+- Phase 1: complete — migration branch and source inventory committed.
+- Phase 2: partial — hash routes and browser history added; a full shared shell/admin layout remains future work.
+- Phase 3: partial — sign-up/sign-in/sign-out use PIXEL's existing Supabase Auth client; session state guards the dashboard; profile creation is attempted under existing RLS.
+- Phase 4: partial — published subjects/lessons load from the existing schema; dashboard reads profile/progress counts. Quiz UI is explicitly marked as a demo because there is no safe client-facing grading path yet.
+- Phase 5: pending — education admin tools and theme preview must wait for an authorization model and secure content-management paths.
+- Phase 6: in progress — GitHub status checks were successful for commit `1f0a5b3`; later commit `d0cd1ff` still needs its own check. A local build could not run in this environment because GitHub DNS/network access was unavailable.
 
 ## Verification status
 
 This document is a source-code inventory, not a production certification. No claim is made that the RoHub or PIXEL app currently builds, that auth works, that RLS is correct, or that a deployment is live. Those checks remain to be run and reported individually.
+
+
+## Live Supabase audit (2026-10-23)
+
+Project `sblkdgssieogtfoxsfov` was confirmed ACTIVE_HEALTHY and was not modified by this migration. The public schema already contains `edu_profiles`, `edu_subjects`, `edu_lessons`, `edu_quiz_questions`, `edu_quiz_attempts`, `edu_learning_progress`, `edu_badges`, `edu_user_badges`, `edu_content_reports`, and `edu_admin_roles`; RLS is enabled on these tables. At inspection time there were 6 published subjects, 6 published lessons, and 6 published questions; no student profiles or admin-role rows existed.
+
+Security findings:
+
+- `edu_quiz_questions` has RLS enabled but no policies. This prevents direct client reads, which is preferable to exposing `answer_index` in a public select. A secure grading endpoint/RPC is still needed before real quiz submission can be enabled.
+- `edu_admin_roles` has RLS enabled but no policies and zero rows. Do not assume any user has admin rights. Admin screens and content mutations must not be enabled until a server-enforced role policy is designed.
+- Supabase advisors reported four foreign keys without covering indexes and two unused indexes; these are advisory performance findings, not changes made by this migration.
+- RoHub's separate Supabase project/configuration was inspected but not copied or connected.
