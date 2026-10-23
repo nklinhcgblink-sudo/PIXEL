@@ -128,7 +128,18 @@ function Dashboard({go}:{go:(p:Page)=>void}) {
       if(profileResult.error||progressResult.error||lessonsResult.error){
         setDashboardError('Một phần dữ liệu chưa tải được. Hãy kiểm tra quyền truy cập RLS trong Supabase.');
       } else {
-        setProfile(profileResult.data as {display_name:string;grade:number|null;xp:number;streak_days:number}|null);
+        let profileData = profileResult.data;
+        if (!profileData) {
+          const metadata = userData.user.user_metadata || {};
+          const {data:createdProfile,error:profileCreateError}=await supabase.from('edu_profiles').upsert({
+            user_id:userId,
+            display_name:String(metadata.display_name||metadata.name||userData.user.email?.split('@')[0]||'Học sinh PIXEL'),
+            grade:Number(metadata.grade_level)||null
+          },{onConflict:'user_id'}).select('display_name,grade,xp,streak_days').maybeSingle();
+          if(!profileCreateError) profileData=createdProfile;
+          else setDashboardError('Chưa tạo được hồ sơ học tập: '+profileCreateError.message);
+        }
+        setProfile(profileData as {display_name:string;grade:number|null;xp:number;streak_days:number}|null);
         setCompletedCount((progressResult.data||[]).filter(row=>row.status==='completed').length);
         setTotalLessons(lessonsResult.count||0);
       }
