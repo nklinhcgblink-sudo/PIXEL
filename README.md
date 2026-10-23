@@ -1,49 +1,18 @@
-# PIXEL Platform
+# PIXEL EDU
 
-A modular foundation for evolving PIXEL from a standalone HTML game into a maintainable React + TypeScript application.
+PIXEL EDU is a free, Vietnamese learning platform for grades 10–12. It provides subject roadmaps, short lessons, practice quizzes with explanations, learning progress, XP, streaks, and achievements.
 
-## Current status
+## Development
 
-This is the **new platform shell**, not a feature-complete replacement for the legacy game yet. The original `index.html.html` and `to-mau-online-standalone.html` files are intentionally preserved unchanged for comparison. Multiplayer behavior and the full coloring workflow have not been migrated in this first scaffold.
+- Node.js 20+
+- `npm install`
+- `npm run dev`
+- `npm run build`
 
-## Requirements
+## Supabase
 
-- Node.js 20 or newer
-- npm 10 or newer
+Copy `.env.example` to `.env.local` and configure the existing Supabase project URL and publishable key. Never expose a service-role key in browser code.
 
-## Start
+## Product direction
 
-```bash
-npm install
-npm run dev
-```
-
-## Quality checks
-
-```bash
-npm test
-npm run typecheck
-npm run build
-```
-
-## Architecture
-
-- `src/app`: application composition and top-level shell
-- `src/components`: reusable presentation components
-- `src/core/plugins`: typed plugin contract and registry
-- `src/features/coloring`: reusable coloring-domain primitives
-- `src/features/scoring`: scoring rules
-- `src/themes`: theme tokens and theme application
-- `docs/architecture.md`: architecture decisions and migration plan
-
-## Extension principles
-
-1. Features own their domain logic; shared UI belongs in components.
-2. Core domain code should not depend on React.
-3. Plugins register through a typed API rather than mutating global state.
-4. Themes are data tokens applied through CSS custom properties.
-5. Migrate legacy behavior incrementally and compare it against the preserved HTML version.
-
-## Legacy reference
-
-Open `to-mau-online-standalone.html` from the repository to inspect the existing standalone implementation. Do not delete or replace the legacy files until parity tests and a migration decision are complete.
+The former coloring-game UI and features have been removed from the application. PIXEL EDU is a learning-first product with Vietnamese curriculum-oriented content and responsive layouts.
